@@ -1,0 +1,26 @@
+{
+  "bookings": [
+    {
+      "bookingCode": "BW-2026-4108",
+      "carId": "audi-a4-executive",
+      "carName": "Audi A4 Executive",
+      "pickupHubId": "mp-nagar",
+      "pickupHubName": "MP Nagar Zone II Hub",
+      "pickupDate": "2026-11-28",
+      "returnDate": "2026-11-30",
+      "customerName": "Vikramaditya Joshi",
+      "customerPhone": "9826054321",
+      "customerEmail": "vikram.joshi@example.in",
+      "drivingLicenceNo": "MP0420190048123",
+      "tripPurpose": "Outstation MP",
+      "days": 2,
+      "rentalSubtotalInr": 5998,
+      "deliveryFeeInr": 0,
+      "securityDepositInr": 5000,
+      "totalPayableInr": 10998,
+      "status": "Confirmed",
+      "createdAt": "2026-11-22T10:30:00.000Z"
+    }
+  ],
+  "inquiries": []
+}
