@@ -29,6 +29,23 @@ interface StoreData {
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const STORE_PATH = path.join(DATA_DIR, 'store.json');
 
+function isLegacyBrandName(value: string): boolean {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return normalized === 'bhopalwheel' || normalized === 'bhopalwheelselfdrive';
+}
+
+function normalizeSettingsBrand(settings: SiteSettings): SiteSettings {
+  return {
+    ...settings,
+    businessName: isLegacyBrandName(settings.businessName)
+      ? DEFAULT_SITE_SETTINGS.businessName
+      : settings.businessName,
+    shortName: isLegacyBrandName(settings.shortName)
+      ? DEFAULT_SITE_SETTINGS.shortName
+      : settings.shortName,
+  };
+}
+
 const SEED_BOOKINGS: BookingRecord[] = [
   {
     bookingCode: 'BW-2026-4108',
@@ -119,9 +136,10 @@ async function readJsonStore(): Promise<StoreData> {
         : FLEET_CARS.map((c) => ({ ...c }));
     const bookings = Array.isArray(parsed.bookings) ? parsed.bookings : [...SEED_BOOKINGS];
     const inquiries = Array.isArray(parsed.inquiries) ? parsed.inquiries : [];
-    const settings: SiteSettings = parsed.settings
+    let settings: SiteSettings = parsed.settings
       ? { ...DEFAULT_SITE_SETTINGS, ...parsed.settings }
       : { ...DEFAULT_SITE_SETTINGS };
+    settings = normalizeSettingsBrand(settings);
     if (settings.email.toLowerCase() === 'bookings@bhopalwheelselfdrive.in') {
       settings.email = '';
     }
@@ -176,7 +194,15 @@ export async function initDatabase(): Promise<{ engine: 'mongodb' | 'json-store'
       if (!existingSettings) {
         await SiteSettingsModel.create({ key: 'primary', ...DEFAULT_SITE_SETTINGS });
       } else {
-        const settingsUpdate: Partial<Pick<SiteSettings, 'whatsappNumber' | 'contactNumber' | 'email'>> = {};
+        const settingsUpdate: Partial<
+          Pick<SiteSettings, 'whatsappNumber' | 'contactNumber' | 'email' | 'businessName' | 'shortName'>
+        > = {};
+        if (isLegacyBrandName(existingSettings.businessName)) {
+          settingsUpdate.businessName = DEFAULT_SITE_SETTINGS.businessName;
+        }
+        if (isLegacyBrandName(existingSettings.shortName)) {
+          settingsUpdate.shortName = DEFAULT_SITE_SETTINGS.shortName;
+        }
         if (['919691827337', '919826012345'].includes(existingSettings.whatsappNumber)) {
           settingsUpdate.whatsappNumber = DEFAULT_SITE_SETTINGS.whatsappNumber;
         }
@@ -323,12 +349,15 @@ export const db = {
     if (useMongo) {
       const doc = await SiteSettingsModel.findOne({ key: 'primary' }).lean();
       if (doc) {
-        return { ...DEFAULT_SITE_SETTINGS, ...(doc as unknown as SiteSettings) };
+        return normalizeSettingsBrand({
+          ...DEFAULT_SITE_SETTINGS,
+          ...(doc as unknown as SiteSettings),
+        });
       }
       return { ...DEFAULT_SITE_SETTINGS };
     }
     const store = await readJsonStore();
-    return { ...DEFAULT_SITE_SETTINGS, ...store.settings };
+    return normalizeSettingsBrand({ ...DEFAULT_SITE_SETTINGS, ...store.settings });
   },
 
   async updateSettings(patch: Partial<SiteSettings>): Promise<SiteSettings> {
@@ -339,7 +368,10 @@ export const db = {
         { $set: { key: 'primary', ...nextPatch } },
         { new: true, upsert: true },
       ).lean();
-      return { ...DEFAULT_SITE_SETTINGS, ...(doc as unknown as SiteSettings) };
+      return normalizeSettingsBrand({
+        ...DEFAULT_SITE_SETTINGS,
+        ...(doc as unknown as SiteSettings),
+      });
     }
     const store = await readJsonStore();
     store.settings = { ...store.settings, ...nextPatch };

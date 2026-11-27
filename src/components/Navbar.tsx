@@ -25,22 +25,17 @@ export function Navbar({ settings, onBookClick }: NavbarProps) {
           href="#top"
           className="font-display text-lg sm:text-xl font-bold tracking-tight text-white whitespace-nowrap shrink-0 flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-sm"
         >
-          {settings?.logoUrl ? (
+          {settings?.logoUrl && (
             <img
               src={settings.logoUrl}
-              alt={settings.businessName}
+              alt="24 Self Drive logo"
               referrerPolicy="no-referrer"
               className="h-7 w-auto object-contain"
             />
-          ) : (
-            <>
-              {settings?.shortName || (
-                <>
-                  24 <span className="text-orange-500">Self Drive</span>
-                </>
-              )}
-            </>
           )}
+          <span>
+            24 <span className="text-orange-500">Self Drive</span>
+          </span>
         </a>
 
         {/* Zone 2: 4 concise single-line navigation links */}
