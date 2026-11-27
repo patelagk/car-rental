@@ -304,7 +304,7 @@ export function FleetSection({
                             : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-800'
                         }`}
                       >
-                        {car.available ? 'Reserve Now' : 'Check Other Dates'}
+                        {car.available ? 'Book Now' : 'Check Other Dates'}
                       </button>
 
                       <a
