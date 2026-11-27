@@ -1,6 +1,8 @@
 import type { Car, CarCategory, PageSeoOverride, SiteSettings } from '../types/rental.ts';
 
 export const LIVE_SITE_ORIGIN = 'https://24selfdrive.com';
+export const SITE_BRAND_NAME = '24 Self Drive';
+export const SITE_LOGO_PATH = '/24-self-drive-logo.png';
 
 export function normalizePrimaryDomainUrl(value: string): string {
   try {
@@ -45,9 +47,9 @@ export const SEO_PAGES: SeoPageData[] = [
   {
     key: 'home',
     path: '/',
-    title: '24 Self Drive | Self Drive Car Rental in Bhopal',
+    title: '24 Self Drive – Self Drive Car Rental in Bhopal',
     description:
-      'Book self drive cars in Bhopal with 24 Self Drive. Compare hatchbacks, sedans and SUVs, see rental rates and choose a listed pickup hub.',
+      'Discover self-drive car rentals in Bhopal with 24 Self Drive. Browse available cars, compare options and book easily online, with convenient pickup and service across Bhopal.',
     heading: 'Self Drive Car Rental in Bhopal',
     intro:
       '24 Self Drive offers self-drive cars in Bhopal for city journeys and trips beyond Madhya Pradesh. Browse the current fleet, compare vehicle details and choose a pickup option before booking.',

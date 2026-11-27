@@ -3,6 +3,8 @@ import {
   getSeoPage,
   LIVE_SITE_ORIGIN,
   normalizePrimaryDomainUrl,
+  SITE_BRAND_NAME,
+  SITE_LOGO_PATH,
   SEO_PAGES,
   type SeoPageData,
 } from '../src/data/seo.ts';
@@ -177,14 +179,27 @@ function makeStructuredData(
   settings: SiteSettings,
   origin: string,
 ) {
+  const logo = {
+    '@type': 'ImageObject',
+    url: `${origin}${SITE_LOGO_PATH}`,
+    width: 768,
+    height: 768,
+  };
   const brand = {
     '@type': 'Organization',
     '@id': `${origin}/#organization`,
-    name: settings.businessName,
+    name: SITE_BRAND_NAME,
     url: `${origin}/`,
+    logo,
     telephone: settings.contactNumber,
     areaServed: { '@type': 'City', name: 'Bhopal', containedInPlace: 'Madhya Pradesh, India' },
-    ...(settings.logoUrl ? { logo: absoluteUrl(settings.logoUrl, origin) } : {}),
+  };
+  const website = {
+    '@type': 'WebSite',
+    '@id': `${origin}/#website`,
+    name: SITE_BRAND_NAME,
+    url: `${origin}/`,
+    publisher: { '@id': `${origin}/#organization` },
   };
   const rentalBusiness = {
     '@type': 'AutoRental',
@@ -195,7 +210,12 @@ function makeStructuredData(
     parentOrganization: { '@id': `${origin}/#organization` },
     areaServed: { '@type': 'City', name: 'Bhopal', containedInPlace: 'Madhya Pradesh, India' },
   };
-  const graph: Record<string, unknown>[] = [brand, rentalBusiness, makeBreadcrumbSchema(page, origin)];
+  const graph: Record<string, unknown>[] = [
+    brand,
+    website,
+    rentalBusiness,
+    makeBreadcrumbSchema(page, origin),
+  ];
 
   if (page.car) {
     const car = page.car;
@@ -259,11 +279,11 @@ export function renderSeoDocument(
     override.ogImage ||
     carImage ||
     settings.logoUrl ||
-    '/src/assets/images/hero_bhopal_suv_1795412733764.webp';
+    SITE_LOGO_PATH;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMetaTag(html, 'name', 'description', description);
   html = setMetaTag(html, 'name', 'robots', robots);
-  html = setMetaTag(html, 'property', 'og:site_name', settings.businessName);
+  html = setMetaTag(html, 'property', 'og:site_name', SITE_BRAND_NAME);
   html = setMetaTag(html, 'property', 'og:type', page.car ? 'product' : 'website');
   html = setMetaTag(html, 'property', 'og:title', title);
   html = setMetaTag(html, 'property', 'og:description', description);
@@ -273,8 +293,14 @@ export function renderSeoDocument(
   html = setMetaTag(html, 'name', 'twitter:description', description);
   if (ogImage) {
     const imageUrl = absoluteUrl(ogImage, origin);
+    const imageAlt =
+      ogImage === SITE_LOGO_PATH
+        ? `${SITE_BRAND_NAME} official logo`
+        : `${SITE_BRAND_NAME} self-drive car rental in Bhopal`;
     html = setMetaTag(html, 'property', 'og:image', imageUrl);
+    html = setMetaTag(html, 'property', 'og:image:alt', imageAlt);
     html = setMetaTag(html, 'name', 'twitter:image', imageUrl);
+    html = setMetaTag(html, 'name', 'twitter:image:alt', imageAlt);
   }
   html = setCanonical(html, canonical);
   if (googleSiteVerification) {

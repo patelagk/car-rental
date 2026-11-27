@@ -9,12 +9,14 @@ import { ProcessAndHubsSection } from './components/ProcessAndHubsSection.tsx';
 import { WhatsAppFloatButton } from './components/WhatsAppFloatButton.tsx';
 import { AdminApp } from './components/admin/AdminApp.tsx';
 import { SeoPage } from './components/SeoPage.tsx';
-import { HERO_IMAGE_URL, PICKUP_HUBS } from './data/fleet.ts';
+import { PICKUP_HUBS } from './data/fleet.ts';
 import {
   getPageSeoOverride,
   getSeoPage,
   LIVE_SITE_ORIGIN,
   normalizePrimaryDomainUrl,
+  SITE_BRAND_NAME,
+  SITE_LOGO_PATH,
 } from './data/seo.ts';
 import type {
   CarCategory,
@@ -85,14 +87,20 @@ export default function App() {
     setMeta('og:title', title, true);
     setMeta('og:description', description, true);
     setMeta('og:url', canonical, true);
-    setMeta('og:site_name', '24 Self Drive', true);
+    setMeta('og:site_name', SITE_BRAND_NAME, true);
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', title);
     setMeta('twitter:description', description);
-    const ogImage = overrides.ogImage || seoPage.car?.imageUrl || HERO_IMAGE_URL;
+    const ogImage = overrides.ogImage || seoPage.car?.imageUrl || SITE_LOGO_PATH;
     const absoluteOgImage = normalizePrimaryDomainUrl(new URL(ogImage, LIVE_SITE_ORIGIN).toString());
     setMeta('og:image', absoluteOgImage, true);
+    const imageAlt =
+      ogImage === SITE_LOGO_PATH
+        ? `${SITE_BRAND_NAME} official logo`
+        : `${SITE_BRAND_NAME} self-drive car rental in Bhopal`;
+    setMeta('og:image:alt', imageAlt, true);
     setMeta('twitter:image', absoluteOgImage);
+    setMeta('twitter:image:alt', imageAlt);
 
     let canonicalTag = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!canonicalTag) {
