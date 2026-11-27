@@ -1,6 +1,20 @@
 import type { Car, CarCategory, PageSeoOverride, SiteSettings } from '../types/rental.ts';
 
-export const LIVE_SITE_ORIGIN = 'https://24selfdrive.in';
+export const LIVE_SITE_ORIGIN = 'https://24selfdrive.com';
+
+export function normalizePrimaryDomainUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    if (['24selfdrive.in', 'www.24selfdrive.in'].includes(url.hostname.toLowerCase())) {
+      url.protocol = 'https:';
+      url.hostname = '24selfdrive.com';
+      url.port = '';
+    }
+    return url.toString();
+  } catch {
+    return value;
+  }
+}
 
 export interface SeoSection {
   heading: string;

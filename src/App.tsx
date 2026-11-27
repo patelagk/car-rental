@@ -10,7 +10,12 @@ import { WhatsAppFloatButton } from './components/WhatsAppFloatButton.tsx';
 import { AdminApp } from './components/admin/AdminApp.tsx';
 import { SeoPage } from './components/SeoPage.tsx';
 import { HERO_IMAGE_URL, PICKUP_HUBS } from './data/fleet.ts';
-import { getPageSeoOverride, getSeoPage, LIVE_SITE_ORIGIN } from './data/seo.ts';
+import {
+  getPageSeoOverride,
+  getSeoPage,
+  LIVE_SITE_ORIGIN,
+  normalizePrimaryDomainUrl,
+} from './data/seo.ts';
 import type {
   CarCategory,
   CarWithAvailability,
@@ -58,7 +63,9 @@ export default function App() {
     const title = overrides.title?.trim() || seoPage.title;
     const description = overrides.description?.trim() || seoPage.description;
     const canonical =
-      overrides.canonicalUrl?.trim() || `${LIVE_SITE_ORIGIN}${seoPage.path}`;
+      normalizePrimaryDomainUrl(
+        overrides.canonicalUrl?.trim() || `${LIVE_SITE_ORIGIN}${seoPage.path}`,
+      );
     const robots = overrides.robots || 'index,follow';
     document.title = title;
 
@@ -83,7 +90,7 @@ export default function App() {
     setMeta('twitter:title', title);
     setMeta('twitter:description', description);
     const ogImage = overrides.ogImage || seoPage.car?.imageUrl || HERO_IMAGE_URL;
-    const absoluteOgImage = new URL(ogImage, LIVE_SITE_ORIGIN).toString();
+    const absoluteOgImage = normalizePrimaryDomainUrl(new URL(ogImage, LIVE_SITE_ORIGIN).toString());
     setMeta('og:image', absoluteOgImage, true);
     setMeta('twitter:image', absoluteOgImage);
 

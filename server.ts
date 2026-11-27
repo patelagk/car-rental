@@ -16,7 +16,12 @@ import type { AuthenticatedRequest } from './server/auth.ts';
 import { db, initDatabase } from './server/db.ts';
 import { persistUploadedImage, uploadMiddleware, UPLOADS_ROOT } from './server/upload.ts';
 import { DEFAULT_SITE_SETTINGS, PICKUP_HUBS } from './src/data/fleet.ts';
-import { getCarSlug, SEO_PAGES, slugify } from './src/data/seo.ts';
+import {
+  getCarSlug,
+  normalizePrimaryDomainUrl,
+  SEO_PAGES,
+  slugify,
+} from './src/data/seo.ts';
 import {
   buildRobotsTxt,
   buildSitemapXml,
@@ -91,6 +96,13 @@ async function startServer() {
 
   const app = express();
   app.use(express.json({ limit: '2mb' }));
+  app.use((req, res, next) => {
+    if (['24selfdrive.in', 'www.24selfdrive.in'].includes(req.hostname.toLowerCase())) {
+      res.redirect(301, `https://24selfdrive.com${req.originalUrl}`);
+      return;
+    }
+    next();
+  });
   app.use('/uploads', express.static(UPLOADS_ROOT));
 
   // -------------------- PUBLIC API ROUTES --------------------
@@ -1082,10 +1094,10 @@ async function startServer() {
     const candidate =
       configured ||
       (isProd
-        ? 'https://24selfdrive.in'
+        ? 'https://24selfdrive.com'
         : `${req.protocol}://${req.get('host') || 'localhost:3000'}`);
     try {
-      const url = new URL(candidate);
+      const url = new URL(normalizePrimaryDomainUrl(candidate));
       if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
       return url.origin;
     } catch {

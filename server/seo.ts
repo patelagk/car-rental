@@ -2,6 +2,7 @@ import {
   getCarSlug,
   getSeoPage,
   LIVE_SITE_ORIGIN,
+  normalizePrimaryDomainUrl,
   SEO_PAGES,
   type SeoPageData,
 } from '../src/data/seo.ts';
@@ -133,9 +134,9 @@ function renderPageContent(page: SeoPageData, cars: Car[], settings: SiteSetting
 
 function absoluteUrl(value: string, origin: string): string {
   try {
-    return new URL(value, origin).toString();
+    return normalizePrimaryDomainUrl(new URL(value, origin).toString());
   } catch {
-    return origin;
+    return normalizePrimaryDomainUrl(origin);
   }
 }
 
@@ -249,7 +250,9 @@ export function renderSeoDocument(
   const override: PageSeoOverride = settings.pageSeo?.[page.key] ?? {};
   const title = override.title?.trim() || page.title;
   const description = override.description?.trim() || page.description;
-  const canonical = override.canonicalUrl?.trim() || absoluteUrl(page.path, origin);
+  const canonical = override.canonicalUrl?.trim()
+    ? normalizePrimaryDomainUrl(override.canonicalUrl.trim())
+    : absoluteUrl(page.path, origin);
   const robots = override.robots || 'index,follow';
   const carImage = page.car?.imageUrl;
   const ogImage =
@@ -295,17 +298,20 @@ export function renderSeoDocument(
 }
 
 export function buildRobotsTxt(origin: string): string {
-  return `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\nSitemap: ${origin}/sitemap.xml\n`;
+  const siteOrigin = normalizePrimaryDomainUrl(origin).replace(/\/$/, '');
+  return `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\n\nSitemap: ${siteOrigin}/sitemap.xml\n`;
 }
 
 export function buildSitemapXml(cars: Car[], settings: SiteSettings, origin: string): string {
-  const siteOrigin = origin || LIVE_SITE_ORIGIN;
+  const siteOrigin = normalizePrimaryDomainUrl(origin || LIVE_SITE_ORIGIN).replace(/\/$/, '');
   const urls = SEO_PAGES.filter((page) => {
     const override = settings.pageSeo?.[page.key];
     return override?.robots !== 'noindex,follow' && override?.robots !== 'noindex,nofollow';
   }).map((page) => {
-    const canonical =
-      settings.pageSeo?.[page.key]?.canonicalUrl?.trim() || absoluteUrl(page.path, siteOrigin);
+    const override = settings.pageSeo?.[page.key]?.canonicalUrl?.trim();
+    const canonical = override
+      ? normalizePrimaryDomainUrl(override)
+      : absoluteUrl(page.path, siteOrigin);
     return { loc: canonical, lastmod: undefined as string | undefined };
   });
 
@@ -315,7 +321,9 @@ export function buildSitemapXml(cars: Car[], settings: SiteSettings, origin: str
     const override = settings.pageSeo?.[`car:${getCarSlug(car)}`];
     if (override?.robots === 'noindex,follow' || override?.robots === 'noindex,nofollow') continue;
     urls.push({
-      loc: override?.canonicalUrl?.trim() || absoluteUrl(path, siteOrigin),
+      loc: override?.canonicalUrl?.trim()
+        ? normalizePrimaryDomainUrl(override.canonicalUrl.trim())
+        : absoluteUrl(path, siteOrigin),
       lastmod: car.updatedAt ? new Date(car.updatedAt).toISOString().slice(0, 10) : undefined,
     });
   }
