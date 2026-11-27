@@ -12,6 +12,7 @@ export interface BlockedDateRange {
 
 export interface Car {
   id: string;
+  slug?: string;
   name: string;
   brand: string;
   model: string;
@@ -33,6 +34,9 @@ export interface Car {
   luggageCapacity: string;
   registrationCode: string;
   description: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  imageAltText?: string;
   imageUrl: string;
   images: string[];
   highlights: string[];
@@ -109,7 +113,18 @@ export interface SiteSettings {
   email: string;
   logoUrl: string;
   featuredCarIds: string[];
+  pageSeo?: Record<string, PageSeoOverride>;
+  googleSiteVerification?: string;
+  ga4MeasurementId?: string;
   updatedAt: string;
+}
+
+export interface PageSeoOverride {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+  robots?: 'index,follow' | 'noindex,follow' | 'noindex,nofollow';
+  ogImage?: string;
 }
 
 export interface DashboardStats {

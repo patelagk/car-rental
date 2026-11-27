@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer as createViteServer } from 'vite';
 import {
   hashPassword,
@@ -13,7 +15,14 @@ import {
 import type { AuthenticatedRequest } from './server/auth.ts';
 import { db, initDatabase } from './server/db.ts';
 import { persistUploadedImage, uploadMiddleware, UPLOADS_ROOT } from './server/upload.ts';
-import { PICKUP_HUBS } from './src/data/fleet.ts';
+import { DEFAULT_SITE_SETTINGS, PICKUP_HUBS } from './src/data/fleet.ts';
+import { getCarSlug, SEO_PAGES, slugify } from './src/data/seo.ts';
+import {
+  buildRobotsTxt,
+  buildSitemapXml,
+  getSeoStaticPaths,
+  renderSeoDocument,
+} from './server/seo.ts';
 import type {
   AvailabilityStatus,
   BlockedDateRange,
@@ -561,8 +570,10 @@ async function startServer() {
         : [primaryImage, ...cleanImages];
 
       const now = new Date().toISOString();
+      const id = slugifyCarId(body.name.trim());
       const newCar: Car = {
-        id: slugifyCarId(body.name.trim()),
+        id,
+        slug: `${slugify(body.name.trim()) || 'car'}-${id}`,
         name: body.name.trim(),
         brand: body.brand.trim(),
         model: body.model.trim(),
@@ -590,6 +601,9 @@ async function startServer() {
         luggageCapacity: body.luggageCapacity?.trim() || '3 Bags',
         registrationCode: body.registrationCode?.trim() || 'MP-04 Series',
         description: body.description?.trim() || '',
+        seoTitle: body.seoTitle?.trim() || '',
+        seoDescription: body.seoDescription?.trim() || '',
+        imageAltText: body.imageAltText?.trim() || '',
         imageUrl: primaryImage,
         images: mergedImages,
         highlights: Array.isArray(body.highlights)
@@ -699,6 +713,9 @@ async function startServer() {
         mileageKmpl: body.mileageKmpl?.trim() ?? existing.mileageKmpl,
         luggageCapacity: body.luggageCapacity?.trim() ?? existing.luggageCapacity,
         description: body.description?.trim() ?? existing.description,
+        seoTitle: body.seoTitle?.trim() ?? existing.seoTitle ?? '',
+        seoDescription: body.seoDescription?.trim() ?? existing.seoDescription ?? '',
+        imageAltText: body.imageAltText?.trim() ?? existing.imageAltText ?? '',
         highlights: Array.isArray(body.highlights)
           ? body.highlights.map((h) => String(h).trim()).filter(Boolean)
           : existing.highlights,
@@ -922,6 +939,88 @@ async function startServer() {
         return;
       }
 
+      const pageSeo: NonNullable<SiteSettings['pageSeo']> = {};
+      if (body.pageSeo !== undefined) {
+        if (!body.pageSeo || typeof body.pageSeo !== 'object' || Array.isArray(body.pageSeo)) {
+          res.status(400).json({ error: 'Page SEO settings must be an object.' });
+          return;
+        }
+        const pageCars = await db.getAllCars(false);
+        const validPageKeys = new Set([
+          ...SEO_PAGES.map((page) => page.key),
+          ...pageCars.map((car) => `car:${getCarSlug(car)}`),
+        ]);
+        for (const [key, override] of Object.entries(body.pageSeo)) {
+          if (!validPageKeys.has(key) || !override || typeof override !== 'object') continue;
+          const clean = {
+            title: typeof override.title === 'string' ? override.title.trim().slice(0, 70) : '',
+            description:
+              typeof override.description === 'string'
+                ? override.description.trim().slice(0, 200)
+                : '',
+            canonicalUrl:
+              typeof override.canonicalUrl === 'string'
+                ? override.canonicalUrl.trim()
+                : '',
+            robots: override.robots,
+            ogImage: typeof override.ogImage === 'string' ? override.ogImage.trim() : '',
+          };
+          if (clean.canonicalUrl.length > 2048) {
+            res.status(400).json({ error: `Canonical URL for "${key}" is too long.` });
+            return;
+          }
+          if (clean.canonicalUrl) {
+            try {
+              const canonicalUrl = new URL(clean.canonicalUrl);
+              if (!['http:', 'https:'].includes(canonicalUrl.protocol)) throw new Error();
+            } catch {
+              res.status(400).json({ error: `Invalid canonical URL for "${key}".` });
+              return;
+            }
+          }
+          if (clean.ogImage && !isSafeImageUrl(clean.ogImage)) {
+            res.status(400).json({ error: `Invalid Open Graph image URL for "${key}".` });
+            return;
+          }
+          if (
+            clean.robots !== undefined &&
+            !['index,follow', 'noindex,follow', 'noindex,nofollow'].includes(clean.robots)
+          ) {
+            res.status(400).json({ error: `Invalid robots setting for "${key}".` });
+            return;
+          }
+          pageSeo[key] = {
+            title: clean.title,
+            description: clean.description,
+            canonicalUrl: clean.canonicalUrl,
+            robots: clean.robots,
+            ogImage: clean.ogImage,
+          };
+        }
+      }
+
+      if (
+        body.googleSiteVerification !== undefined &&
+        typeof body.googleSiteVerification !== 'string'
+      ) {
+        res.status(400).json({ error: 'Google Search Console verification token must be text.' });
+        return;
+      }
+      const googleSiteVerification = body.googleSiteVerification?.trim() || '';
+      if (googleSiteVerification && !/^[A-Za-z0-9_-]{1,200}$/.test(googleSiteVerification)) {
+        res.status(400).json({ error: 'Invalid Google Search Console verification token.' });
+        return;
+      }
+      if (body.ga4MeasurementId !== undefined && typeof body.ga4MeasurementId !== 'string') {
+        res.status(400).json({ error: 'Google Analytics measurement ID must be text.' });
+        return;
+      }
+      const ga4MeasurementId = body.ga4MeasurementId?.trim().toUpperCase() || '';
+      if (ga4MeasurementId && !/^G-[A-Z0-9]{4,20}$/.test(ga4MeasurementId)) {
+        res.status(400).json({ error: 'Google Analytics ID must use the G-XXXXXXXXXX format.' });
+        return;
+      }
+
       const featuredIds = Array.isArray(body.featuredCarIds)
         ? body.featuredCarIds.map(String)
         : undefined;
@@ -932,9 +1031,12 @@ async function startServer() {
         whatsappNumber: body.whatsappNumber.replace(/\D/g, ''),
         contactNumber: body.contactNumber.trim(),
         businessAddress: body.businessAddress.trim(),
-        email: body.email?.trim() || 'bookings@bhopalwheelselfdrive.in',
+        email: body.email?.trim() || '',
         logoUrl: body.logoUrl?.trim() ?? '',
         featuredCarIds: featuredIds,
+        pageSeo: body.pageSeo !== undefined ? pageSeo : undefined,
+        googleSiteVerification,
+        ga4MeasurementId,
       });
 
       if (featuredIds) {
@@ -956,23 +1058,124 @@ async function startServer() {
     }
   });
 
+  // -------------------- SEO AND PUBLIC PAGE SERVING --------------------
+  const isProd = process.env.NODE_ENV === 'production';
+  const distDir = path.resolve(process.cwd(), 'dist');
+  const vite = isProd
+    ? null
+    : await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'custom',
+      });
+
+  async function getHtmlTemplate(requestPath: string): Promise<string> {
+    const templatePath = isProd
+      ? path.join(distDir, 'index.html')
+      : path.resolve(process.cwd(), 'index.html');
+    let template = await fs.readFile(templatePath, 'utf-8');
+    if (vite) template = await vite.transformIndexHtml(requestPath, template);
+    return template;
+  }
+
+  function getPublicOrigin(req: express.Request): string {
+    const configured = process.env.SITE_URL?.trim();
+    const candidate =
+      configured ||
+      (isProd
+        ? 'https://24selfdrive.in'
+        : `${req.protocol}://${req.get('host') || 'localhost:3000'}`);
+    try {
+      const url = new URL(candidate);
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
+      return url.origin;
+    } catch {
+      throw new Error('SITE_URL or request host must be an absolute HTTP(S) URL.');
+    }
+  }
+
+  app.get('/robots.txt', (req, res) => {
+    try {
+      res.type('text/plain').send(buildRobotsTxt(getPublicOrigin(req)));
+    } catch {
+      res.status(500).type('text/plain').send('Unable to generate robots.txt.');
+    }
+  });
+
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const [cars, settings] = await Promise.all([db.getAllCars(false), db.getSettings()]);
+      res
+        .set('Cache-Control', 'no-cache')
+        .type('application/xml')
+        .send(buildSitemapXml(cars, settings, getPublicOrigin(req)));
+    } catch {
+      res.status(500).type('text/plain').send('Unable to generate sitemap.xml.');
+    }
+  });
+
+  async function sendSeoPage(req: express.Request, res: express.Response, pathname: string) {
+    try {
+      const [cars, settings] = await Promise.all([db.getAllCars(false), db.getSettings()]);
+      const template = await getHtmlTemplate(pathname);
+      const rendered = renderSeoDocument(
+        template,
+        pathname,
+        cars,
+        settings,
+        getPublicOrigin(req),
+        settings.googleSiteVerification,
+      );
+      if (!rendered) {
+        res.status(404).type('text/plain').send('Page not found.');
+        return;
+      }
+      if (rendered.robots.startsWith('noindex')) {
+        res.set('X-Robots-Tag', rendered.robots);
+      }
+      res.type('html').send(rendered.html);
+    } catch (err) {
+      console.error('Unable to render SEO page:', err);
+      res.status(500).type('text/plain').send('Unable to render this page.');
+    }
+  }
+
+  app.get(getSeoStaticPaths(), async (req, res) => {
+    await sendSeoPage(req, res, req.path);
+  });
+
+  app.get('/cars/:slug', async (req, res) => {
+    const pathname = `/cars/${String(req.params.slug)}`;
+    await sendSeoPage(req, res, pathname);
+  });
+
+  app.get(['/admin', '/admin/{*splat}'], async (req, res) => {
+    try {
+      let html = await getHtmlTemplate(req.path);
+      html = html.replace(/<title>[\s\S]*?<\/title>/i, '<title>24 Self Drive | Admin</title>');
+      html = html.replace(
+        /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/i,
+        '',
+      );
+      html = html.replace(/<link\s+rel="canonical"[^>]*>/i, '');
+      html = html.replace(
+        /<meta\s+name="robots"[^>]*>/i,
+        '<meta name="robots" content="noindex,nofollow" />',
+      );
+      res.set('X-Robots-Tag', 'noindex, nofollow').type('html').send(html);
+    } catch (err) {
+      console.error('Unable to render admin application:', err);
+      res.status(500).type('text/plain').send('Unable to load admin application.');
+    }
+  });
+
   // -------------------- VITE / STATIC SERVING --------------------
 
-  const isProd = process.env.NODE_ENV === 'production';
-
   if (!isProd) {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
+    if (vite) app.use(vite.middlewares);
   } else {
-    const distDir = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distDir));
-    app.get('/{*splat}', (_req, res) => {
-      res.sendFile(path.join(distDir, 'index.html'));
-    });
+    app.use(express.static(distDir, { index: false }));
   }
+  app.use((_req, res) => res.status(404).type('text/plain').send('Page not found.'));
 
   const PORT = Number(process.env.PORT) || 3000;
   app.listen(PORT, '0.0.0.0', () => {

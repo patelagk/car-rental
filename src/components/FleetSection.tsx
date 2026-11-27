@@ -2,6 +2,7 @@ import { AlertCircle, Car as CarIcon, CheckCircle2, MessageCircle } from 'lucide
 import { useState } from 'react';
 import type { CarCategory, CarWithAvailability, TransmissionType } from '../types/rental.ts';
 import { buildWhatsAppUrl, formatInr } from '../utils/whatsapp.ts';
+import { getCarSlug } from '../data/seo.ts';
 
 interface FleetSectionProps {
   cars: CarWithAvailability[];
@@ -37,7 +38,14 @@ function CarImage({ car }: { car: CarWithAvailability }) {
   return (
     <img
       src={car.imageUrl}
-      alt={`${car.name} ${car.modelYear} ${car.category} self drive rental in Bhopal`}
+      alt={
+        car.imageAltText?.trim() ||
+        `${car.name} ${car.modelYear} ${car.category.toLowerCase()} self-drive car in Bhopal`
+      }
+      width="800"
+      height="600"
+      loading="lazy"
+      decoding="async"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
       className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
@@ -226,7 +234,9 @@ export function FleetSection({
 
                     <div className="mt-2 flex items-baseline justify-between gap-3">
                       <h3 className="font-display text-lg font-bold text-neutral-950 tracking-tight">
-                        {car.name}
+                        <a href={`/cars/${getCarSlug(car)}`} className="hover:text-orange-700">
+                          {car.name}
+                        </a>
                       </h3>
                       <span className="font-mono text-xs text-neutral-500 tabular-nums shrink-0">
                         {car.modelYear}

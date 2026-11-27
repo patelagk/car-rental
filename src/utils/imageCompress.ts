@@ -28,13 +28,13 @@ export async function compressImageFile(file: File, maxWidth = 1280, quality = 0
 
     ctx.drawImage(img, 0, 0, width, height);
 
-    const targetMime = file.type === 'image/png' ? 'image/png' : 'image/webp';
+    const targetMime = 'image/webp';
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, targetMime, quality),
     );
     if (!blob) return file;
 
-    const ext = targetMime === 'image/png' ? '.png' : '.webp';
+    const ext = '.webp';
     const baseName = file.name.replace(/\.[^.]+$/, '');
     return new File([blob], `${baseName}${ext}`, { type: targetMime });
   } finally {

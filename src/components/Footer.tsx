@@ -14,7 +14,7 @@ export function Footer({ settings, onNavigateAdmin }: FooterProps) {
   const address = settings?.businessAddress || BUSINESS_CONTACT.address;
   const contactNumber = settings?.contactNumber || BUSINESS_CONTACT.phoneDisplay;
   const whatsappNumber = settings?.whatsappNumber || BUSINESS_CONTACT.phoneE164;
-  const email = settings?.email || BUSINESS_CONTACT.email;
+  const email = settings?.email?.trim() || BUSINESS_CONTACT.email;
 
   return (
     <footer className="bg-[#0A0A0B] text-neutral-300 py-14">
@@ -57,6 +57,14 @@ export function Footer({ settings, onNavigateAdmin }: FooterProps) {
                   Outstation Quotes &amp; Lookup
                 </a>
               </li>
+              <li><a href="/cars" className="hover:text-white transition-colors">All Cars</a></li>
+              <li><a href="/cars/hatchback" className="hover:text-white transition-colors">Hatchbacks</a></li>
+              <li><a href="/cars/sedan" className="hover:text-white transition-colors">Sedans</a></li>
+              <li><a href="/cars/suv" className="hover:text-white transition-colors">SUVs</a></li>
+              <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
+              <li><a href="/contact" className="hover:text-white transition-colors">Contact Us</a></li>
+              <li><a href="/rental-policies" className="hover:text-white transition-colors">Rental Policies</a></li>
+              <li><a href="/blog" className="hover:text-white transition-colors">Travel Guide</a></li>
               <li>
                 <button
                   type="button"
@@ -85,12 +93,14 @@ export function Footer({ settings, onNavigateAdmin }: FooterProps) {
                   {contactNumber}
                 </a>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-orange-500 shrink-0" />
-                <a href={`mailto:${email}`} className="hover:text-white">
-                  {email}
-                </a>
-              </li>
+              {email && (
+                <li className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-orange-500 shrink-0" />
+                  <a href={`mailto:${email}`} className="hover:text-white">
+                    {email}
+                  </a>
+                </li>
+              )}
               <li>
                 <a
                   href={buildWhatsAppUrl(

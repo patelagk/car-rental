@@ -272,7 +272,7 @@ export function AdminApp({ onNavigatePublic }: AdminAppProps) {
         <div className="h-16 px-4 border-b border-neutral-800 flex items-center justify-between gap-2">
           {!sidebarCollapsed && (
             <span className="font-display text-base font-bold text-white whitespace-nowrap truncate">
-              Bhopal <span className="text-orange-500">Wheel</span>
+              24 <span className="text-orange-500">Self Drive</span>
             </span>
           )}
           <button
@@ -344,7 +344,7 @@ export function AdminApp({ onNavigatePublic }: AdminAppProps) {
           <aside className="relative z-10 w-64 bg-[#111114] border-r border-neutral-800 flex flex-col">
             <div className="h-16 px-4 border-b border-neutral-800 flex items-center justify-between">
               <span className="font-display text-base font-bold text-white">
-                Bhopal <span className="text-orange-500">Wheel</span>
+                24 <span className="text-orange-500">Self Drive</span>
               </span>
               <button
                 type="button"

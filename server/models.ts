@@ -13,6 +13,7 @@ const blockedDateRangeSchema = new mongoose.Schema(
 const carSchema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true, index: true },
+    slug: { type: String, unique: true, sparse: true, index: true },
     name: { type: String, required: true, trim: true },
     brand: { type: String, required: true, trim: true },
     model: { type: String, required: true, trim: true },
@@ -46,6 +47,9 @@ const carSchema = new mongoose.Schema(
     luggageCapacity: { type: String, default: '3 Bags' },
     registrationCode: { type: String, default: 'MP-04 Series' },
     description: { type: String, default: '' },
+    seoTitle: { type: String, default: '' },
+    seoDescription: { type: String, default: '' },
+    imageAltText: { type: String, default: '' },
     imageUrl: { type: String, required: true },
     images: { type: [String], default: [] },
     highlights: { type: [String], default: [] },
@@ -113,6 +117,9 @@ const siteSettingsSchema = new mongoose.Schema(
     email: { type: String, required: true },
     logoUrl: { type: String, default: '' },
     featuredCarIds: { type: [String], default: [] },
+    pageSeo: { type: mongoose.Schema.Types.Mixed, default: {} },
+    googleSiteVerification: { type: String, default: '' },
+    ga4MeasurementId: { type: String, default: '' },
   },
   { timestamps: true },
 );

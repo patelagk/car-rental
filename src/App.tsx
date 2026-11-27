@@ -8,7 +8,9 @@ import { Navbar } from './components/Navbar.tsx';
 import { ProcessAndHubsSection } from './components/ProcessAndHubsSection.tsx';
 import { WhatsAppFloatButton } from './components/WhatsAppFloatButton.tsx';
 import { AdminApp } from './components/admin/AdminApp.tsx';
-import { PICKUP_HUBS } from './data/fleet.ts';
+import { SeoPage } from './components/SeoPage.tsx';
+import { HERO_IMAGE_URL, PICKUP_HUBS } from './data/fleet.ts';
+import { getPageSeoOverride, getSeoPage, LIVE_SITE_ORIGIN } from './data/seo.ts';
 import type {
   CarCategory,
   CarWithAvailability,
@@ -48,6 +50,51 @@ export default function App() {
   const [selectedCar, setSelectedCar] = useState<CarWithAvailability | null>(null);
 
   const isAdminRoute = pathname.startsWith('/admin');
+  const seoPage = getSeoPage(pathname, cars);
+
+  useEffect(() => {
+    if (isAdminRoute || !seoPage) return;
+    const overrides = getPageSeoOverride(settings, seoPage.key);
+    const title = overrides.title?.trim() || seoPage.title;
+    const description = overrides.description?.trim() || seoPage.description;
+    const canonical =
+      overrides.canonicalUrl?.trim() || `${LIVE_SITE_ORIGIN}${seoPage.path}`;
+    const robots = overrides.robots || 'index,follow';
+    document.title = title;
+
+    function setMeta(name: string, content: string, property = false) {
+      const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+      let tag = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute(property ? 'property' : 'name', name);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    }
+
+    setMeta('description', description);
+    setMeta('robots', robots);
+    setMeta('og:title', title, true);
+    setMeta('og:description', description, true);
+    setMeta('og:url', canonical, true);
+    setMeta('og:site_name', '24 Self Drive', true);
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', title);
+    setMeta('twitter:description', description);
+    const ogImage = overrides.ogImage || seoPage.car?.imageUrl || HERO_IMAGE_URL;
+    const absoluteOgImage = new URL(ogImage, LIVE_SITE_ORIGIN).toString();
+    setMeta('og:image', absoluteOgImage, true);
+    setMeta('twitter:image', absoluteOgImage);
+
+    let canonicalTag = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonicalTag) {
+      canonicalTag = document.createElement('link');
+      canonicalTag.rel = 'canonical';
+      document.head.appendChild(canonicalTag);
+    }
+    canonicalTag.href = canonical;
+  }, [isAdminRoute, seoPage, settings]);
 
   const fetchFleet = useCallback(async () => {
     setLoading(true);
@@ -86,6 +133,9 @@ export default function App() {
 
   if (isAdminRoute) {
     return <AdminApp onNavigatePublic={() => navigate('/')} />;
+  }
+  if (seoPage && pathname !== '/') {
+    return <SeoPage page={seoPage} cars={cars} settings={settings} />;
   }
 
   function handleHeroSearch(params: {

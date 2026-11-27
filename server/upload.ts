@@ -37,7 +37,7 @@ async function uploadToCloudinary(buffer: Buffer, mimetype: string): Promise<str
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = 'bhopal-wheel-cars';
+  const folder = '24-self-drive-cars';
   const signaturePayload = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
   const signature = crypto.createHash('sha1').update(signaturePayload).digest('hex');
 

@@ -1,6 +1,7 @@
 import { Check, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { Car, SiteSettings } from '../../types/rental.ts';
+import { getCarSlug, SEO_PAGES } from '../../data/seo.ts';
 import { compressImageFile } from '../../utils/imageCompress.ts';
 
 interface SettingsViewProps {
@@ -11,6 +12,13 @@ interface SettingsViewProps {
 }
 
 export function SettingsView({ settings, cars, token, onSaveSettings }: SettingsViewProps) {
+  const seoPageOptions = [
+    ...SEO_PAGES.map((page) => ({ key: page.key, heading: page.heading })),
+    ...cars.map((car) => ({
+      key: `car:${getCarSlug(car)}`,
+      heading: `${car.name} detail page`,
+    })),
+  ];
   const [businessName, setBusinessName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -18,6 +26,10 @@ export function SettingsView({ settings, cars, token, onSaveSettings }: Settings
   const [email, setEmail] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [featuredCarIds, setFeaturedCarIds] = useState<string[]>([]);
+  const [pageSeo, setPageSeo] = useState<NonNullable<SiteSettings['pageSeo']>>({});
+  const [selectedSeoPage, setSelectedSeoPage] = useState(SEO_PAGES[0].key);
+  const [googleSiteVerification, setGoogleSiteVerification] = useState('');
+  const [ga4MeasurementId, setGa4MeasurementId] = useState('');
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -32,6 +44,9 @@ export function SettingsView({ settings, cars, token, onSaveSettings }: Settings
     setEmail(settings.email);
     setLogoUrl(settings.logoUrl || '');
     setFeaturedCarIds(settings.featuredCarIds || []);
+    setPageSeo(settings.pageSeo || {});
+    setGoogleSiteVerification(settings.googleSiteVerification || '');
+    setGa4MeasurementId(settings.ga4MeasurementId || '');
   }, [settings]);
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -82,6 +97,9 @@ export function SettingsView({ settings, cars, token, onSaveSettings }: Settings
         email,
         logoUrl,
         featuredCarIds,
+        pageSeo,
+        googleSiteVerification,
+        ga4MeasurementId,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -175,6 +193,152 @@ export function SettingsView({ settings, cars, token, onSaveSettings }: Settings
               value={businessAddress}
               onChange={(e) => setBusinessAddress(e.target.value)}
               className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white focus:outline-none focus:border-orange-500"
+            />
+          </div>
+        </div>
+
+        {/* Website Logo */}
+        <div className="pt-4 border-t border-neutral-800 space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Page SEO settings</h2>
+            <p className="mt-1 text-[11px] text-neutral-500">
+              Overrides apply to one selected public page. Leave fields blank to use its unique defaults.
+            </p>
+          </div>
+          <div>
+            <label htmlFor="seo-page" className="block text-xs font-medium text-neutral-300 mb-1">
+              Public page
+            </label>
+            <select
+              id="seo-page"
+              value={selectedSeoPage}
+              onChange={(e) => setSelectedSeoPage(e.target.value)}
+              className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+            >
+              {seoPageOptions.map((page) => (
+                <option key={page.key} value={page.key}>{page.heading}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="seo-title" className="block text-xs font-medium text-neutral-300 mb-1">
+              Page SEO Title
+            </label>
+            <input
+              id="seo-title"
+              maxLength={70}
+              value={pageSeo[selectedSeoPage]?.title || ''}
+              onChange={(e) =>
+                setPageSeo((current) => ({
+                  ...current,
+                  [selectedSeoPage]: { ...current[selectedSeoPage], title: e.target.value },
+                }))
+              }
+              className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label htmlFor="seo-description" className="block text-xs font-medium text-neutral-300 mb-1">
+              Meta Description
+            </label>
+            <textarea
+              id="seo-description"
+              rows={2}
+              maxLength={200}
+              value={pageSeo[selectedSeoPage]?.description || ''}
+              onChange={(e) =>
+                setPageSeo((current) => ({
+                  ...current,
+                  [selectedSeoPage]: { ...current[selectedSeoPage], description: e.target.value },
+                }))
+              }
+              className="w-full p-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label htmlFor="seo-canonical" className="block text-xs font-medium text-neutral-300 mb-1">
+              Canonical URL (optional absolute URL)
+            </label>
+            <input
+              id="seo-canonical"
+              type="url"
+              value={pageSeo[selectedSeoPage]?.canonicalUrl || ''}
+              onChange={(e) =>
+                setPageSeo((current) => ({
+                  ...current,
+                  [selectedSeoPage]: { ...current[selectedSeoPage], canonicalUrl: e.target.value },
+                }))
+              }
+              className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="seo-robots" className="block text-xs font-medium text-neutral-300 mb-1">
+                Meta Robots
+              </label>
+              <select
+                id="seo-robots"
+                value={pageSeo[selectedSeoPage]?.robots || 'index,follow'}
+                onChange={(e) =>
+                  setPageSeo((current) => ({
+                    ...current,
+                    [selectedSeoPage]: {
+                      ...current[selectedSeoPage],
+                      robots: e.target.value as 'index,follow' | 'noindex,follow' | 'noindex,nofollow',
+                    },
+                  }))
+                }
+                className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+              >
+                <option value="index,follow">index,follow</option>
+                <option value="noindex,follow">noindex,follow</option>
+                <option value="noindex,nofollow">noindex,nofollow</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="seo-og-image" className="block text-xs font-medium text-neutral-300 mb-1">
+                Open Graph Image URL
+              </label>
+              <input
+                id="seo-og-image"
+                type="url"
+                value={pageSeo[selectedSeoPage]?.ogImage || ''}
+                onChange={(e) =>
+                  setPageSeo((current) => ({
+                    ...current,
+                    [selectedSeoPage]: { ...current[selectedSeoPage], ogImage: e.target.value },
+                  }))
+                }
+                className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-neutral-800 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="google-verification" className="block text-xs font-medium text-neutral-300 mb-1">
+              Google Search Console verification token
+            </label>
+            <input
+              id="google-verification"
+              value={googleSiteVerification}
+              onChange={(e) => setGoogleSiteVerification(e.target.value)}
+              placeholder="Token from Search Console HTML tag method"
+              className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
+            />
+          </div>
+          <div>
+            <label htmlFor="ga4-id" className="block text-xs font-medium text-neutral-300 mb-1">
+              Google Analytics 4 Measurement ID
+            </label>
+            <input
+              id="ga4-id"
+              value={ga4MeasurementId}
+              onChange={(e) => setGa4MeasurementId(e.target.value.toUpperCase())}
+              placeholder="G-XXXXXXXXXX"
+              className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white"
             />
           </div>
         </div>

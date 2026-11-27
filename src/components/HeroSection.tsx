@@ -108,6 +108,11 @@ export function HeroSection({
                   <img
                     src={HERO_IMAGE_URL}
                     alt="Dark metallic SUV parked beside Upper Lake VIP Road in Bhopal at twilight"
+                    width="1200"
+                    height="750"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     onError={() => setImgError(true)}
                     className="w-full h-full object-cover"

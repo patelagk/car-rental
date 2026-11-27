@@ -5,7 +5,7 @@ export const BUSINESS_CONTACT = {
   shortName: '24 Self Drive',
   phoneDisplay: '+91 93032 59841',
   phoneE164: '919303259841',
-  email: 'bookings@bhopalwheelselfdrive.in',
+  email: '',
   address: 'Plot 42, Zone II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh 462011',
   hours: 'Open Daily · 6:00 AM to 11:00 PM',
 };
@@ -16,7 +16,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   whatsappNumber: '919303259841',
   contactNumber: '+91 93032 59841',
   businessAddress: 'Plot 42, Zone II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh 462011',
-  email: 'bookings@bhopalwheelselfdrive.in',
+  email: '',
   logoUrl: '',
   featuredCarIds: [
     'vw-polo-gt',
@@ -26,10 +26,13 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     'hyundai-kona-urban',
     'toyota-fortuner-legender',
   ],
+  pageSeo: {},
+  googleSiteVerification: '',
+  ga4MeasurementId: '',
   updatedAt: '2026-11-22T10:00:00.000Z',
 };
 
-export const HERO_IMAGE_URL = '/src/assets/images/hero_bhopal_suv_1795412733764.jpg';
+export const HERO_IMAGE_URL = '/src/assets/images/hero_bhopal_suv_1795412733764.webp';
 
 export const PICKUP_HUBS: PickupHub[] = [
   {
@@ -99,8 +102,8 @@ export const FLEET_CARS: Car[] = [
     registrationCode: 'MP-04 Series',
     description:
       'Nimble, solid-handling compact hatchback ideal for daily Bhopal city commutes, New Market runs, and quick Sanchi day trips.',
-    imageUrl: '/src/assets/images/car_swift_hatchback_1795412733366.jpg',
-    images: ['/src/assets/images/car_swift_hatchback_1795412733366.jpg'],
+    imageUrl: '/src/assets/images/car_swift_hatchback_1795412733366.webp',
+    images: ['/src/assets/images/car_swift_hatchback_1795412733366.webp'],
     highlights: ['FASTag Preloaded', 'Apple CarPlay & Android Auto', 'Dual Airbags & ABS'],
     featured: true,
     status: 'Available',
@@ -133,8 +136,8 @@ export const FLEET_CARS: Car[] = [
     registrationCode: 'MP-04 Series',
     description:
       'Refined automatic sportback featuring effortless city drivability, quiet cabin insulation, and crisp dual-zone climate control.',
-    imageUrl: '/src/assets/images/car_i20_hatchback_1795412733998.jpg',
-    images: ['/src/assets/images/car_i20_hatchback_1795412733998.jpg'],
+    imageUrl: '/src/assets/images/car_i20_hatchback_1795412733998.webp',
+    images: ['/src/assets/images/car_i20_hatchback_1795412733998.webp'],
     highlights: ['Smooth S-Tronic Automatic', 'Rear Camera & Sensors', 'Climate Control AC'],
     featured: true,
     status: 'Available',
@@ -167,8 +170,8 @@ export const FLEET_CARS: Car[] = [
     registrationCode: 'MP-04 Series',
     description:
       'Reliable highway cruiser with generous rear legroom and a 470-litre boot built for Bhopal–Indore and Ujjain corporate travel.',
-    imageUrl: '/src/assets/images/car_dzire_sedan_1795412733989.jpg',
-    images: ['/src/assets/images/car_dzire_sedan_1795412733989.jpg'],
+    imageUrl: '/src/assets/images/car_dzire_sedan_1795412733989.webp',
+    images: ['/src/assets/images/car_dzire_sedan_1795412733989.webp'],
     highlights: ['Spacious 470L Boot', 'Rear AC Vents', 'All-India Tourist Permit'],
     featured: true,
     status: 'Available',
@@ -201,8 +204,8 @@ export const FLEET_CARS: Car[] = [
     registrationCode: 'MP-04 Series',
     description:
       'Executive sedan with full leather upholstery, adaptive cruise control, and quiet highway manners for VIP arrivals and business travel.',
-    imageUrl: '/src/assets/images/car_city_sedan_1795412733020.jpg',
-    images: ['/src/assets/images/car_city_sedan_1795412733020.jpg'],
+    imageUrl: '/src/assets/images/car_city_sedan_1795412733020.webp',
+    images: ['/src/assets/images/car_city_sedan_1795412733020.webp'],
     highlights: ['Executive Leather Cabin', 'Cruise Control for Highways', '3-Zone Climate Control'],
     featured: true,
     status: 'Available',
@@ -235,8 +238,8 @@ export const FLEET_CARS: Car[] = [
     registrationCode: 'MP-04 Series',
     description:
       'High-ground-clearance diesel crossover engineered for weekend drives up Pachmarhi ghats, Bhimbetka trails, and highway touring.',
-    imageUrl: '/src/assets/images/car_nexon_suv_1795412733205.jpg',
-    images: ['/src/assets/images/car_nexon_suv_1795412733205.jpg'],
+    imageUrl: '/src/assets/images/car_nexon_suv_1795412733205.webp',
+    images: ['/src/assets/images/car_nexon_suv_1795412733205.webp'],
     highlights: ['High Ground Clearance', 'Hill Assist for Pachmarhi', 'Sunroof & Cruise Control'],
     featured: true,
     status: 'Available',
@@ -269,8 +272,8 @@ export const FLEET_CARS: Car[] = [
     registrationCode: 'MP-04 Series',
     description:
       'Commanding 7-seater automatic diesel SUV for family outstation tours, wedding convoys, and long Madhya Pradesh road trips.',
-    imageUrl: '/src/assets/images/car_scorpion_suv_1795412734719.jpg',
-    images: ['/src/assets/images/car_scorpion_suv_1795412734719.jpg'],
+    imageUrl: '/src/assets/images/car_scorpion_suv_1795412734719.webp',
+    images: ['/src/assets/images/car_scorpion_suv_1795412734719.webp'],
     highlights: ['7-Seater Family Captain Comfort', 'Ventilated Seats', 'MP & Outstation Highway Ready'],
     featured: true,
     status: 'Available',

@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import mongoose from 'mongoose';
 import { DEFAULT_SITE_SETTINGS, FLEET_CARS } from '../src/data/fleet.ts';
+import { slugify } from '../src/data/seo.ts';
 import type {
   AdminUserRecord,
   BookingRecord,
@@ -57,16 +58,20 @@ let initialized = false;
 
 function normalizeCar(raw: Record<string, unknown>): Car {
   const id = String(raw.id || '');
+  const name = String(raw.name || '');
+  const normalizeImageUrl = (value: string) =>
+    value.startsWith('/src/assets/images/') ? value.replace(/\.jpe?g$/i, '.webp') : value;
   const images = Array.isArray(raw.images)
-    ? raw.images.map(String)
+    ? raw.images.map((image) => normalizeImageUrl(String(image)))
     : raw.imageUrl
-      ? [String(raw.imageUrl)]
+      ? [normalizeImageUrl(String(raw.imageUrl))]
       : [];
-  const imageUrl = String(raw.imageUrl || images[0] || '');
+  const imageUrl = normalizeImageUrl(String(raw.imageUrl || images[0] || ''));
 
   return {
     id,
-    name: String(raw.name || ''),
+    slug: String(raw.slug || `${slugify(name) || 'car'}-${id}`),
+    name,
     brand: String(raw.brand || ''),
     model: String(raw.model || ''),
     modelYear: Number(raw.modelYear || 2025),
@@ -87,6 +92,9 @@ function normalizeCar(raw: Record<string, unknown>): Car {
     luggageCapacity: String(raw.luggageCapacity || '3 Bags'),
     registrationCode: String(raw.registrationCode || 'MP-04 Series'),
     description: String(raw.description || ''),
+    seoTitle: String(raw.seoTitle || ''),
+    seoDescription: String(raw.seoDescription || ''),
+    imageAltText: String(raw.imageAltText || ''),
     imageUrl,
     images: images.length > 0 ? images : imageUrl ? [imageUrl] : [],
     highlights: Array.isArray(raw.highlights) ? raw.highlights.map(String) : [],
@@ -114,6 +122,9 @@ async function readJsonStore(): Promise<StoreData> {
     const settings: SiteSettings = parsed.settings
       ? { ...DEFAULT_SITE_SETTINGS, ...parsed.settings }
       : { ...DEFAULT_SITE_SETTINGS };
+    if (settings.email.toLowerCase() === 'bookings@bhopalwheelselfdrive.in') {
+      settings.email = '';
+    }
     if (['919691827337', '919826012345'].includes(settings.whatsappNumber)) {
       settings.whatsappNumber = DEFAULT_SITE_SETTINGS.whatsappNumber;
     }
@@ -165,12 +176,15 @@ export async function initDatabase(): Promise<{ engine: 'mongodb' | 'json-store'
       if (!existingSettings) {
         await SiteSettingsModel.create({ key: 'primary', ...DEFAULT_SITE_SETTINGS });
       } else {
-        const settingsUpdate: Partial<Pick<SiteSettings, 'whatsappNumber' | 'contactNumber'>> = {};
+        const settingsUpdate: Partial<Pick<SiteSettings, 'whatsappNumber' | 'contactNumber' | 'email'>> = {};
         if (['919691827337', '919826012345'].includes(existingSettings.whatsappNumber)) {
           settingsUpdate.whatsappNumber = DEFAULT_SITE_SETTINGS.whatsappNumber;
         }
         if (['+91 96918 27337', '+91 9691827337'].includes(existingSettings.contactNumber)) {
           settingsUpdate.contactNumber = DEFAULT_SITE_SETTINGS.contactNumber;
+        }
+        if (existingSettings.email.toLowerCase() === 'bookings@bhopalwheelselfdrive.in') {
+          settingsUpdate.email = '';
         }
         if (Object.keys(settingsUpdate).length > 0) {
           await SiteSettingsModel.updateOne(

@@ -7,6 +7,7 @@ import type {
   FuelType,
   TransmissionType,
 } from '../../types/rental.ts';
+import { getCarSlug, slugify } from '../../data/seo.ts';
 import { compressImageFile } from '../../utils/imageCompress.ts';
 
 interface CarFormModalProps {
@@ -36,6 +37,9 @@ export function CarFormModal({ open, editingCar, token, onClose, onSaved }: CarF
   const [extraKmRateInr, setExtraKmRateInr] = useState(10);
   const [freeKmPerDay, setFreeKmPerDay] = useState(300);
   const [description, setDescription] = useState('');
+  const [seoTitle, setSeoTitle] = useState('');
+  const [seoDescription, setSeoDescription] = useState('');
+  const [imageAltText, setImageAltText] = useState('');
   const [featuresText, setFeaturesText] = useState('FASTag Preloaded, Rear Parking Camera, Dual Airbags');
   const [images, setImages] = useState<string[]>([]);
   const [primaryImageUrl, setPrimaryImageUrl] = useState('');
@@ -69,6 +73,9 @@ export function CarFormModal({ open, editingCar, token, onClose, onSaved }: CarF
       setExtraKmRateInr(editingCar.extraKmRateInr);
       setFreeKmPerDay(editingCar.freeKmPerDay);
       setDescription(editingCar.description);
+      setSeoTitle(editingCar.seoTitle || '');
+      setSeoDescription(editingCar.seoDescription || '');
+      setImageAltText(editingCar.imageAltText || '');
       setFeaturesText(editingCar.highlights.join(', '));
       const initialImgs =
         editingCar.images && editingCar.images.length > 0
@@ -99,6 +106,9 @@ export function CarFormModal({ open, editingCar, token, onClose, onSaved }: CarF
       setExtraKmRateInr(10);
       setFreeKmPerDay(300);
       setDescription('');
+      setSeoTitle('');
+      setSeoDescription('');
+      setImageAltText('');
       setFeaturesText('FASTag Preloaded, Rear Parking Camera, Dual Airbags');
       setImages([]);
       setPrimaryImageUrl('');
@@ -203,6 +213,9 @@ export function CarFormModal({ open, editingCar, token, onClose, onSaved }: CarF
       extraKmRateInr: Number(extraKmRateInr),
       freeKmPerDay: Number(freeKmPerDay),
       description: description.trim(),
+      seoTitle: seoTitle.trim(),
+      seoDescription: seoDescription.trim(),
+      imageAltText: imageAltText.trim(),
       highlights,
       images,
       imageUrl: chosenPrimary,
@@ -530,6 +543,58 @@ export function CarFormModal({ open, editingCar, token, onClose, onSaved }: CarF
                 placeholder="FASTag Preloaded, Apple CarPlay, Rear Camera, ABS"
                 value={featuresText}
                 onChange={(e) => setFeaturesText(e.target.value)}
+                className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white focus:outline-none focus:border-orange-500"
+              />
+            </div>
+          </div>
+
+          {/* Search appearance */}
+          <div className="pt-4 border-t border-neutral-800 grid grid-cols-1 gap-4">
+            <div>
+              <p className="text-xs font-semibold text-neutral-300">Car search appearance</p>
+              <p className="mt-1 text-[11px] text-neutral-500">
+                Public detail URL: /cars/{editingCar ? getCarSlug(editingCar) : `${slugify(name) || 'car'}-<unique-id>`}
+              </p>
+            </div>
+            <div>
+              <label htmlFor="cf-seo-title" className="block text-xs font-medium text-neutral-300 mb-1">
+                Car SEO Title
+              </label>
+              <input
+                id="cf-seo-title"
+                type="text"
+                maxLength={70}
+                value={seoTitle}
+                onChange={(e) => setSeoTitle(e.target.value)}
+                placeholder="Defaults to car name + self drive rental in Bhopal"
+                className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white focus:outline-none focus:border-orange-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="cf-seo-description" className="block text-xs font-medium text-neutral-300 mb-1">
+                Car Meta Description
+              </label>
+              <textarea
+                id="cf-seo-description"
+                rows={2}
+                maxLength={200}
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                placeholder="A concise, accurate summary of this car and its rental details"
+                className="w-full p-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white focus:outline-none focus:border-orange-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="cf-image-alt" className="block text-xs font-medium text-neutral-300 mb-1">
+                Car Image Alt Text
+              </label>
+              <input
+                id="cf-image-alt"
+                type="text"
+                maxLength={150}
+                value={imageAltText}
+                onChange={(e) => setImageAltText(e.target.value)}
+                placeholder="Describe the visible car and view"
                 className="w-full h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white focus:outline-none focus:border-orange-500"
               />
             </div>

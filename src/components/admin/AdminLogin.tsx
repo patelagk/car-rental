@@ -124,7 +124,7 @@ export function AdminLogin({ onAuthenticated, onNavigatePublic }: AdminLoginProp
                       type="email"
                       required
                       autoComplete="email"
-                      placeholder="admin@bhopalwheelselfdrive.in"
+                      placeholder="Admin email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full h-11 pl-10 pr-3 bg-[#09090B] border border-neutral-800 rounded-lg text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-orange-500"
