@@ -4,6 +4,8 @@ import { PICKUP_HUBS } from '../data/fleet.ts';
 import type { BookingRecord, CarWithAvailability } from '../types/rental.ts';
 import { buildWhatsAppUrl, formatInr } from '../utils/whatsapp.ts';
 
+const BOOKING_NOTIFICATION_WHATSAPP = '919691827337';
+
 interface CarBookingModalProps {
   car: CarWithAvailability | null;
   initialHubId: string;
@@ -188,14 +190,33 @@ export function CarBookingModal({
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
                   href={buildWhatsAppUrl(
-                    `Hello Bhopal Wheel Self Drive, my Booking ID is ${confirmedBooking.bookingCode} for ${confirmedBooking.carName} (${confirmedBooking.pickupDate} to ${confirmedBooking.returnDate}) at ${confirmedBooking.pickupHubName}.`,
+                    [
+                      'New car booking received',
+                      `Booking ID: ${confirmedBooking.bookingCode}`,
+                      `Customer: ${confirmedBooking.customerName}`,
+                      `Phone: ${confirmedBooking.customerPhone}`,
+                      `Email: ${confirmedBooking.customerEmail}`,
+                      `Driving licence: ${confirmedBooking.drivingLicenceNo}`,
+                      `Car: ${confirmedBooking.carName}`,
+                      `Pickup hub: ${confirmedBooking.pickupHubName}`,
+                      `Pickup date: ${confirmedBooking.pickupDate}`,
+                      `Return date: ${confirmedBooking.returnDate}`,
+                      `Trip purpose: ${confirmedBooking.tripPurpose}`,
+                      `Duration: ${confirmedBooking.days} days`,
+                      `Rental: ${formatInr(confirmedBooking.rentalSubtotalInr)}`,
+                      `Hub fee: ${formatInr(confirmedBooking.deliveryFeeInr)}`,
+                      `Refundable deposit: ${formatInr(confirmedBooking.securityDepositInr)}`,
+                      `Total payable: ${formatInr(confirmedBooking.totalPayableInr)}`,
+                      `Status: ${confirmedBooking.status}`,
+                    ].join('\n'),
+                    BOOKING_NOTIFICATION_WHATSAPP,
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>Send Confirmation to WhatsApp</span>
+                  <span>Send Booking Details on WhatsApp</span>
                 </a>
                 <button
                   type="button"
@@ -205,6 +226,9 @@ export function CarBookingModal({
                   Done
                 </button>
               </div>
+              <p className="mt-3 text-xs text-neutral-500">
+                WhatsApp will open with the full booking details prefilled. Review the message and tap Send to notify us.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

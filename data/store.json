@@ -1,4 +1,240 @@
 {
+  "cars": [
+    {
+      "id": "vw-polo-gt",
+      "name": "Volkswagen Polo GT",
+      "brand": "Volkswagen",
+      "model": "Polo GT",
+      "modelYear": 2025,
+      "variant": "Highline Sport",
+      "category": "Hatchback",
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "seats": 5,
+      "acAvailable": true,
+      "dailyRateInr": 2500,
+      "weeklyRateInr": 9499,
+      "monthlyRateInr": 34999,
+      "securityDepositInr": 3000,
+      "extraHourRateInr": 180,
+      "freeKmPerDay": 300,
+      "extraKmRateInr": 9,
+      "mileageKmpl": "18.2 km/l",
+      "luggageCapacity": "2 Cabin Bags",
+      "registrationCode": "MP-04 Series",
+      "description": "Nimble, solid-handling compact hatchback ideal for daily Bhopal city commutes, New Market runs, and quick Sanchi day trips.",
+      "imageUrl": "/src/assets/images/car_swift_hatchback_1795412733366.jpg",
+      "images": [
+        "/src/assets/images/car_swift_hatchback_1795412733366.jpg"
+      ],
+      "highlights": [
+        "FASTag Preloaded",
+        "Apple CarPlay & Android Auto",
+        "Dual Airbags & ABS"
+      ],
+      "featured": true,
+      "status": "Booked",
+      "isArchived": false,
+      "blockedDates": [],
+      "createdAt": "2026-11-18T09:00:00.000Z",
+      "updatedAt": "2026-11-23T17:21:35.445Z"
+    },
+    {
+      "id": "audi-a3-sportback",
+      "name": "Audi A3 Sportback",
+      "brand": "Audi",
+      "model": "A3 Sportback",
+      "modelYear": 2025,
+      "variant": "Premium Plus",
+      "category": "Hatchback",
+      "transmission": "Automatic",
+      "fuelType": "Petrol",
+      "seats": 5,
+      "acAvailable": true,
+      "dailyRateInr": 2299,
+      "weeklyRateInr": 14999,
+      "monthlyRateInr": 54999,
+      "securityDepositInr": 3000,
+      "extraHourRateInr": 250,
+      "freeKmPerDay": 300,
+      "extraKmRateInr": 11,
+      "mileageKmpl": "16.5 km/l",
+      "luggageCapacity": "3 Cabin Bags",
+      "registrationCode": "MP-04 Series",
+      "description": "Refined automatic sportback featuring effortless city drivability, quiet cabin insulation, and crisp dual-zone climate control.",
+      "imageUrl": "/src/assets/images/car_i20_hatchback_1795412733998.jpg",
+      "images": [
+        "/src/assets/images/car_i20_hatchback_1795412733998.jpg"
+      ],
+      "highlights": [
+        "Smooth S-Tronic Automatic",
+        "Rear Camera & Sensors",
+        "Climate Control AC"
+      ],
+      "featured": true,
+      "status": "Available",
+      "isArchived": false,
+      "blockedDates": [],
+      "createdAt": "2026-11-19T11:00:00.000Z",
+      "updatedAt": "2026-11-22T10:00:00.000Z"
+    },
+    {
+      "id": "toyota-corolla-altis",
+      "name": "Toyota Corolla Altis",
+      "brand": "Toyota",
+      "model": "Corolla Altis",
+      "modelYear": 2024,
+      "variant": "GL Comfort",
+      "category": "Sedan",
+      "transmission": "Manual",
+      "fuelType": "Petrol",
+      "seats": 5,
+      "acAvailable": true,
+      "dailyRateInr": 1799,
+      "weeklyRateInr": 11499,
+      "monthlyRateInr": 42999,
+      "securityDepositInr": 3000,
+      "extraHourRateInr": 200,
+      "freeKmPerDay": 300,
+      "extraKmRateInr": 10,
+      "mileageKmpl": "17.4 km/l",
+      "luggageCapacity": "4 Large Suitcases",
+      "registrationCode": "MP-04 Series",
+      "description": "Reliable highway cruiser with generous rear legroom and a 470-litre boot built for Bhopal–Indore and Ujjain corporate travel.",
+      "imageUrl": "/src/assets/images/car_dzire_sedan_1795412733989.jpg",
+      "images": [
+        "/src/assets/images/car_dzire_sedan_1795412733989.jpg"
+      ],
+      "highlights": [
+        "Spacious 470L Boot",
+        "Rear AC Vents",
+        "All-India Tourist Permit"
+      ],
+      "featured": true,
+      "status": "Available",
+      "isArchived": false,
+      "blockedDates": [],
+      "createdAt": "2026-11-19T14:30:00.000Z",
+      "updatedAt": "2026-11-23T17:21:49.588Z"
+    },
+    {
+      "id": "audi-a4-executive",
+      "name": "Audi A4 Executive",
+      "brand": "Audi",
+      "model": "A4",
+      "modelYear": 2025,
+      "variant": "Technology Trim",
+      "category": "Luxury",
+      "transmission": "Automatic",
+      "fuelType": "Petrol",
+      "seats": 5,
+      "acAvailable": true,
+      "dailyRateInr": 2999,
+      "weeklyRateInr": 19499,
+      "monthlyRateInr": 72999,
+      "securityDepositInr": 5000,
+      "extraHourRateInr": 350,
+      "freeKmPerDay": 300,
+      "extraKmRateInr": 14,
+      "mileageKmpl": "15.2 km/l",
+      "luggageCapacity": "4 Suitcases",
+      "registrationCode": "MP-04 Series",
+      "description": "Executive sedan with full leather upholstery, adaptive cruise control, and quiet highway manners for VIP arrivals and business travel.",
+      "imageUrl": "/src/assets/images/car_city_sedan_1795412733020.jpg",
+      "images": [
+        "/src/assets/images/car_city_sedan_1795412733020.jpg"
+      ],
+      "highlights": [
+        "Executive Leather Cabin",
+        "Cruise Control for Highways",
+        "3-Zone Climate Control"
+      ],
+      "featured": true,
+      "status": "Booked",
+      "isArchived": false,
+      "blockedDates": [],
+      "createdAt": "2026-11-20T08:15:00.000Z",
+      "updatedAt": "2026-11-23T17:21:43.772Z"
+    },
+    {
+      "id": "hyundai-kona-urban",
+      "name": "Hyundai Kona Urban",
+      "brand": "Hyundai",
+      "model": "Kona",
+      "modelYear": 2025,
+      "variant": "SX Touring",
+      "category": "SUV",
+      "transmission": "Manual",
+      "fuelType": "Diesel",
+      "seats": 5,
+      "acAvailable": true,
+      "dailyRateInr": 2199,
+      "weeklyRateInr": 13999,
+      "monthlyRateInr": 49999,
+      "securityDepositInr": 3000,
+      "extraHourRateInr": 240,
+      "freeKmPerDay": 300,
+      "extraKmRateInr": 11,
+      "mileageKmpl": "20.4 km/l",
+      "luggageCapacity": "3 Large Bags",
+      "registrationCode": "MP-04 Series",
+      "description": "High-ground-clearance diesel crossover engineered for weekend drives up Pachmarhi ghats, Bhimbetka trails, and highway touring.",
+      "imageUrl": "/src/assets/images/car_nexon_suv_1795412733205.jpg",
+      "images": [
+        "/src/assets/images/car_nexon_suv_1795412733205.jpg"
+      ],
+      "highlights": [
+        "High Ground Clearance",
+        "Hill Assist for Pachmarhi",
+        "Sunroof & Cruise Control"
+      ],
+      "featured": true,
+      "status": "Unavailable",
+      "isArchived": false,
+      "blockedDates": [],
+      "createdAt": "2026-11-21T10:00:00.000Z",
+      "updatedAt": "2026-11-23T17:21:39.421Z"
+    },
+    {
+      "id": "toyota-fortuner-legender",
+      "name": "Toyota Fortuner Legender",
+      "brand": "Toyota",
+      "model": "Fortuner Legender",
+      "modelYear": 2025,
+      "variant": "4x2 AT 7-Seater",
+      "category": "SUV",
+      "transmission": "Automatic",
+      "fuelType": "Diesel",
+      "seats": 7,
+      "acAvailable": true,
+      "dailyRateInr": 3899,
+      "weeklyRateInr": 24999,
+      "monthlyRateInr": 89999,
+      "securityDepositInr": 5000,
+      "extraHourRateInr": 450,
+      "freeKmPerDay": 300,
+      "extraKmRateInr": 16,
+      "mileageKmpl": "13.8 km/l",
+      "luggageCapacity": "5 Suitcases (Folded 3rd Row)",
+      "registrationCode": "MP-04 Series",
+      "description": "Commanding 7-seater automatic diesel SUV for family outstation tours, wedding convoys, and long Madhya Pradesh road trips.",
+      "imageUrl": "/src/assets/images/car_scorpion_suv_1795412734719.jpg",
+      "images": [
+        "/src/assets/images/car_scorpion_suv_1795412734719.jpg"
+      ],
+      "highlights": [
+        "7-Seater Family Captain Comfort",
+        "Ventilated Seats",
+        "MP & Outstation Highway Ready"
+      ],
+      "featured": true,
+      "status": "Available",
+      "isArchived": false,
+      "blockedDates": [],
+      "createdAt": "2026-11-21T16:45:00.000Z",
+      "updatedAt": "2026-11-22T10:00:00.000Z"
+    }
+  ],
   "bookings": [
     {
       "bookingCode": "BW-2026-4108",
@@ -22,5 +258,32 @@
       "createdAt": "2026-11-22T10:30:00.000Z"
     }
   ],
-  "inquiries": []
+  "inquiries": [],
+  "settings": {
+    "businessName": "Bhopal Wheel Self Drive",
+    "shortName": "Bhopal Wheel",
+    "whatsappNumber": "919826012345",
+    "contactNumber": "+91 9691827337",
+    "businessAddress": "Plot 42, Zone II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh 462011",
+    "email": "bookings@bhopalwheelselfdrive.in",
+    "logoUrl": "",
+    "featuredCarIds": [
+      "vw-polo-gt",
+      "audi-a3-sportback",
+      "toyota-corolla-altis",
+      "audi-a4-executive",
+      "hyundai-kona-urban",
+      "toyota-fortuner-legender"
+    ],
+    "updatedAt": "2026-11-23T17:22:14.167Z"
+  },
+  "adminUsers": [
+    {
+      "email": "kushwahgoorav2018@gmail.com",
+      "passwordHash": "7438700af597c52e4b147e37cdadc3c1b3b6a84793e7fa4c788001f091ff2879808d76935c5306db1875168fc41135c14c1c03fae002e61484ccbad9c9ca6dea",
+      "salt": "924e86d9fe0f119cf126f348c72a4a82",
+      "role": "admin",
+      "createdAt": "2026-11-23T17:20:20.737Z"
+    }
+  ]
 }
