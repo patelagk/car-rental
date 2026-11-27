@@ -1,10 +1,30 @@
 import { CheckCircle2, MessageCircle, ShieldCheck, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { PICKUP_HUBS } from '../data/fleet.ts';
+import { BUSINESS_CONTACT, PICKUP_HUBS } from '../data/fleet.ts';
 import type { BookingRecord, CarWithAvailability } from '../types/rental.ts';
 import { buildWhatsAppUrl, formatInr } from '../utils/whatsapp.ts';
 
-const BOOKING_NOTIFICATION_WHATSAPP = '919691827337';
+function buildBookingWhatsAppMessage(booking: BookingRecord): string {
+  return [
+    'New car booking received',
+    `Booking ID: ${booking.bookingCode}`,
+    `Customer: ${booking.customerName}`,
+    `Phone: ${booking.customerPhone}`,
+    `Email: ${booking.customerEmail}`,
+    `Driving licence: ${booking.drivingLicenceNo}`,
+    `Car: ${booking.carName}`,
+    `Pickup hub: ${booking.pickupHubName}`,
+    `Pickup date: ${booking.pickupDate}`,
+    `Return date: ${booking.returnDate}`,
+    `Trip purpose: ${booking.tripPurpose}`,
+    `Duration: ${booking.days} days`,
+    `Rental: ${formatInr(booking.rentalSubtotalInr)}`,
+    `Hub fee: ${formatInr(booking.deliveryFeeInr)}`,
+    `Refundable deposit: ${formatInr(booking.securityDepositInr)}`,
+    `Total payable: ${formatInr(booking.totalPayableInr)}`,
+    `Status: ${booking.status}`,
+  ].join('\n');
+}
 
 interface CarBookingModalProps {
   car: CarWithAvailability | null;
@@ -70,6 +90,11 @@ export function CarBookingModal({
     e.preventDefault();
     if (!car) return;
 
+    const whatsappWindow = window.open('about:blank', '_blank');
+    if (whatsappWindow) {
+      whatsappWindow.opener = null;
+    }
+
     setErrorMsg(null);
     setSubmitting(true);
 
@@ -92,13 +117,21 @@ export function CarBookingModal({
 
       const data = (await response.json()) as { booking?: BookingRecord; error?: string };
       if (!response.ok || !data.booking) {
+        whatsappWindow?.close();
         setErrorMsg(data.error ?? 'Could not complete reservation.');
         return;
       }
 
       setConfirmedBooking(data.booking);
       onBookingConfirmed(data.booking);
+      if (whatsappWindow) {
+        whatsappWindow.location.href = buildWhatsAppUrl(
+          buildBookingWhatsAppMessage(data.booking),
+          BUSINESS_CONTACT.phoneE164,
+        );
+      }
     } catch {
+      whatsappWindow?.close();
       setErrorMsg('Network error while confirming reservation. Please try again or book on WhatsApp.');
     } finally {
       setSubmitting(false);
@@ -190,26 +223,8 @@ export function CarBookingModal({
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
                   href={buildWhatsAppUrl(
-                    [
-                      'New car booking received',
-                      `Booking ID: ${confirmedBooking.bookingCode}`,
-                      `Customer: ${confirmedBooking.customerName}`,
-                      `Phone: ${confirmedBooking.customerPhone}`,
-                      `Email: ${confirmedBooking.customerEmail}`,
-                      `Driving licence: ${confirmedBooking.drivingLicenceNo}`,
-                      `Car: ${confirmedBooking.carName}`,
-                      `Pickup hub: ${confirmedBooking.pickupHubName}`,
-                      `Pickup date: ${confirmedBooking.pickupDate}`,
-                      `Return date: ${confirmedBooking.returnDate}`,
-                      `Trip purpose: ${confirmedBooking.tripPurpose}`,
-                      `Duration: ${confirmedBooking.days} days`,
-                      `Rental: ${formatInr(confirmedBooking.rentalSubtotalInr)}`,
-                      `Hub fee: ${formatInr(confirmedBooking.deliveryFeeInr)}`,
-                      `Refundable deposit: ${formatInr(confirmedBooking.securityDepositInr)}`,
-                      `Total payable: ${formatInr(confirmedBooking.totalPayableInr)}`,
-                      `Status: ${confirmedBooking.status}`,
-                    ].join('\n'),
-                    BOOKING_NOTIFICATION_WHATSAPP,
+                    buildBookingWhatsAppMessage(confirmedBooking),
+                    BUSINESS_CONTACT.phoneE164,
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -227,7 +242,7 @@ export function CarBookingModal({
                 </button>
               </div>
               <p className="mt-3 text-xs text-neutral-500">
-                WhatsApp will open with the full booking details prefilled. Review the message and tap Send to notify us.
+                WhatsApp opens with the full booking details prefilled. Review the message and tap Send to notify us. If it did not open automatically, use the button above.
               </p>
             </div>
           ) : (
@@ -381,7 +396,7 @@ export function CarBookingModal({
                     <input
                       id="modal-phone"
                       type="tel"
-                      placeholder="9826012345"
+                      placeholder="10-digit mobile number"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       required

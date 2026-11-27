@@ -134,7 +134,7 @@ export function InquiryAndLookupSection() {
                     id="inq-phone"
                     type="tel"
                     required
-                    placeholder="9826012345"
+                    placeholder="10-digit mobile number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full h-11 px-3 border border-neutral-300 rounded-lg text-sm font-mono tabular-nums text-neutral-950 focus:outline-none focus:border-orange-500"

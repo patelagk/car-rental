@@ -124,7 +124,7 @@ export function SettingsView({ settings, cars, token, onSaveSettings }: Settings
 
           <div>
             <label htmlFor="st-wa" className="block text-xs font-medium text-neutral-300 mb-1">
-              WhatsApp Number (with country code, e.g. 919826012345)
+              WhatsApp Number (with country code, e.g. 919691827337)
             </label>
             <input
               id="st-wa"

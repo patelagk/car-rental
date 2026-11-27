@@ -158,6 +158,11 @@ export async function initDatabase(): Promise<{ engine: 'mongodb' | 'json-store'
       const existingSettings = await SiteSettingsModel.findOne({ key: 'primary' });
       if (!existingSettings) {
         await SiteSettingsModel.create({ key: 'primary', ...DEFAULT_SITE_SETTINGS });
+      } else if (existingSettings.whatsappNumber === '919826012345') {
+        await SiteSettingsModel.updateOne(
+          { _id: existingSettings._id },
+          { $set: { whatsappNumber: DEFAULT_SITE_SETTINGS.whatsappNumber } },
+        );
       }
 
       initialized = true;
