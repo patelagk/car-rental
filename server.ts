@@ -89,7 +89,7 @@ async function startServer() {
   app.get('/api/health', (_req, res) => {
     res.json({
       status: 'ok',
-      service: 'Bhopal Wheel Self Drive',
+      service: '24 Self Drive',
       database: dbInfo.engine,
     });
   });
@@ -976,7 +976,7 @@ async function startServer() {
 
   const PORT = Number(process.env.PORT) || 3000;
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Bhopal Wheel Self Drive running on http://0.0.0.0:${PORT}`);
+    console.log(`24 Self Drive running on http://0.0.0.0:${PORT}`);
   });
 }
 

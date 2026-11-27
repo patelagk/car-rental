@@ -1,20 +1,20 @@
 import type { Car, PickupHub, SiteSettings } from '../types/rental.ts';
 
 export const BUSINESS_CONTACT = {
-  brandName: 'Bhopal Wheel Self Drive',
-  shortName: 'Bhopal Wheel',
-  phoneDisplay: '+91 96918 27337',
-  phoneE164: '919691827337',
+  brandName: '24 Self Drive',
+  shortName: '24 Self Drive',
+  phoneDisplay: '+91 93032 59841',
+  phoneE164: '919303259841',
   email: 'bookings@bhopalwheelselfdrive.in',
   address: 'Plot 42, Zone II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh 462011',
   hours: 'Open Daily · 6:00 AM to 11:00 PM',
 };
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  businessName: 'Bhopal Wheel Self Drive',
-  shortName: 'Bhopal Wheel',
-  whatsappNumber: '919691827337',
-  contactNumber: '+91 96918 27337',
+  businessName: '24 Self Drive',
+  shortName: '24 Self Drive',
+  whatsappNumber: '919303259841',
+  contactNumber: '+91 93032 59841',
   businessAddress: 'Plot 42, Zone II, Maharana Pratap Nagar, Bhopal, Madhya Pradesh 462011',
   email: 'bookings@bhopalwheelselfdrive.in',
   logoUrl: '',

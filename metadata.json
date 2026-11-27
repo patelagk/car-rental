@@ -1,5 +1,5 @@
 {
-  "name": "Bhopal Wheel Self Drive",
+  "name": "24 Self Drive",
   "description": "Self drive car rental in Bhopal, Madhya Pradesh. Affordable hatchbacks, sedans, and 7-seater SUVs with flexible pickup hubs and instant booking.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

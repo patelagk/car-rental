@@ -114,6 +114,12 @@ async function readJsonStore(): Promise<StoreData> {
     const settings: SiteSettings = parsed.settings
       ? { ...DEFAULT_SITE_SETTINGS, ...parsed.settings }
       : { ...DEFAULT_SITE_SETTINGS };
+    if (['919691827337', '919826012345'].includes(settings.whatsappNumber)) {
+      settings.whatsappNumber = DEFAULT_SITE_SETTINGS.whatsappNumber;
+    }
+    if (['+91 96918 27337', '+91 9691827337'].includes(settings.contactNumber)) {
+      settings.contactNumber = DEFAULT_SITE_SETTINGS.contactNumber;
+    }
     const adminUsers = Array.isArray(parsed.adminUsers) ? parsed.adminUsers : [];
     return { cars, bookings, inquiries, settings, adminUsers };
   } catch {
@@ -158,11 +164,20 @@ export async function initDatabase(): Promise<{ engine: 'mongodb' | 'json-store'
       const existingSettings = await SiteSettingsModel.findOne({ key: 'primary' });
       if (!existingSettings) {
         await SiteSettingsModel.create({ key: 'primary', ...DEFAULT_SITE_SETTINGS });
-      } else if (existingSettings.whatsappNumber === '919826012345') {
-        await SiteSettingsModel.updateOne(
-          { _id: existingSettings._id },
-          { $set: { whatsappNumber: DEFAULT_SITE_SETTINGS.whatsappNumber } },
-        );
+      } else {
+        const settingsUpdate: Partial<Pick<SiteSettings, 'whatsappNumber' | 'contactNumber'>> = {};
+        if (['919691827337', '919826012345'].includes(existingSettings.whatsappNumber)) {
+          settingsUpdate.whatsappNumber = DEFAULT_SITE_SETTINGS.whatsappNumber;
+        }
+        if (['+91 96918 27337', '+91 9691827337'].includes(existingSettings.contactNumber)) {
+          settingsUpdate.contactNumber = DEFAULT_SITE_SETTINGS.contactNumber;
+        }
+        if (Object.keys(settingsUpdate).length > 0) {
+          await SiteSettingsModel.updateOne(
+            { _id: existingSettings._id },
+            { $set: settingsUpdate },
+          );
+        }
       }
 
       initialized = true;

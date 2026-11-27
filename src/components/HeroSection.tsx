@@ -33,7 +33,7 @@ export function HeroSection({
   const selectedHub = PICKUP_HUBS.find((h) => h.id === hubId) ?? PICKUP_HUBS[0];
 
   const whatsAppHref = buildWhatsAppUrl(
-    `Hello Bhopal Wheel Self Drive, I would like to book a ${
+    `Hello 24 Self Drive, I would like to book a ${
       category === 'All' ? 'self-drive car' : category
     } from ${selectedHub.name} (${pickupDate} to ${returnDate}). Please share availability.`,
   );
@@ -116,7 +116,7 @@ export function HeroSection({
                   <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-neutral-900 to-neutral-800 p-8 text-center">
                     <CarIcon className="w-12 h-12 text-orange-500 mb-3" />
                     <p className="font-display text-lg font-semibold text-white">
-                      Bhopal Wheel Self Drive
+                      24 Self Drive
                     </p>
                     <p className="text-sm text-neutral-400 mt-1">
                       MP-04 Sanitized Self-Drive Fleet

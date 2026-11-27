@@ -472,7 +472,7 @@ export function CarBookingModal({
 
                   <a
                     href={buildWhatsAppUrl(
-                      `Hello Bhopal Wheel Self Drive, I want to reserve ${car.name} at ${selectedHub.name} from ${pickupDate} to ${returnDate}. Total estimate: ${formatInr(totalPayable)}.`,
+                      `Hello 24 Self Drive, I want to reserve ${car.name} at ${selectedHub.name} from ${pickupDate} to ${returnDate}. Total estimate: ${formatInr(totalPayable)}.`,
                     )}
                     target="_blank"
                     rel="noopener noreferrer"

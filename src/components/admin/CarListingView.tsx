@@ -165,7 +165,7 @@ export function CarListingView({
         <div className="bg-[#111114] border border-neutral-800 rounded-xl p-10 text-center">
           <p className="font-display text-base font-semibold text-white">No matching cars found</p>
           <p className="text-xs text-neutral-400 mt-1">
-            Adjust your search or filters, or add a new car to the Bhopal Wheel fleet.
+            Adjust your search or filters, or add a new car to the 24 Self Drive fleet.
           </p>
           <button
             type="button"

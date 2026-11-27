@@ -36,7 +36,7 @@ export function Navbar({ settings, onBookClick }: NavbarProps) {
             <>
               {settings?.shortName || (
                 <>
-                  Bhopal <span className="text-orange-500">Wheel</span>
+                  24 <span className="text-orange-500">Self Drive</span>
                 </>
               )}
             </>

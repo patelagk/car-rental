@@ -200,7 +200,7 @@ export function FleetSection({
         {!loading && !error && cars.length > 0 && (
           <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {cars.map((car) => {
-              const waMessage = `Hello Bhopal Wheel Self Drive, I want to book the ${car.name} (${car.transmission}, ${car.fuelType}) from ${pickupDate} to ${returnDate}.`;
+              const waMessage = `Hello 24 Self Drive, I want to book the ${car.name} (${car.transmission}, ${car.fuelType}) from ${pickupDate} to ${returnDate}.`;
               return (
                 <article
                   key={car.id}

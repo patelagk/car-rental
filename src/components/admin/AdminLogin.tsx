@@ -91,7 +91,7 @@ export function AdminLogin({ onAuthenticated, onNavigatePublic }: AdminLoginProp
               {needsSetup ? <KeyRound className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
             </div>
             <div>
-              <p className="text-xs font-medium text-orange-400">Bhopal Wheel Self Drive</p>
+              <p className="text-xs font-medium text-orange-400">24 Self Drive</p>
               <h1 className="font-display text-xl font-bold text-white">
                 {needsSetup ? 'Initialize Admin Account' : 'Admin Console Sign In'}
               </h1>
