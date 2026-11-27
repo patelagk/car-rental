@@ -1,10 +1,6 @@
 import crypto from 'node:crypto';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import mongoose from 'mongoose';
 import multer from 'multer';
-
-export const UPLOADS_ROOT = path.resolve(process.cwd(), 'uploads');
-const CARS_UPLOAD_DIR = path.join(UPLOADS_ROOT, 'cars');
 
 const ALLOWED_MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -28,39 +24,31 @@ export const uploadMiddleware = multer({
   },
 });
 
-async function uploadToCloudinary(buffer: Buffer, mimetype: string): Promise<string | null> {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
-  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
-  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
-  if (!cloudName || !apiKey || !apiSecret) {
-    return null;
+function getImageBucket(): InstanceType<typeof mongoose.mongo.GridFSBucket> {
+  const database = mongoose.connection.db;
+  if (!database || mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB is unavailable. Car images cannot be stored right now.');
   }
+  return new mongoose.mongo.GridFSBucket(database, { bucketName: 'carImages' });
+}
 
-  const timestamp = Math.floor(Date.now() / 1000);
-  const folder = '24-self-drive-cars';
-  const signaturePayload = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
-  const signature = crypto.createHash('sha1').update(signaturePayload).digest('hex');
-
-  const form = new FormData();
-  const ext = ALLOWED_MIME_TO_EXT[mimetype] || '.webp';
-  const blob = new Blob([new Uint8Array(buffer)], { type: mimetype });
-  form.append('file', blob, `car_${timestamp}${ext}`);
-  form.append('folder', folder);
-  form.append('timestamp', String(timestamp));
-  form.append('api_key', apiKey);
-  form.append('signature', signature);
-
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body: form,
+export async function persistImageBuffer(
+  buffer: Buffer,
+  mimetype: string,
+  filename: string,
+  metadata: Record<string, unknown> = {},
+): Promise<string> {
+  const bucket = getImageBucket();
+  const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
+  const upload = bucket.openUploadStream(filename, {
+    metadata: { ...metadata, contentType: mimetype, sha256 },
   });
-
-  if (!response.ok) {
-    throw new Error('Cloud image upload failed.');
-  }
-
-  const data = (await response.json()) as { secure_url?: string };
-  return data.secure_url || null;
+  await new Promise<void>((resolve, reject) => {
+    upload.once('error', reject);
+    upload.once('finish', resolve);
+    upload.end(buffer);
+  });
+  return `/api/images/${(upload.id as mongoose.mongo.ObjectId).toHexString()}`;
 }
 
 export async function persistUploadedImage(file: Express.Multer.File): Promise<string> {
@@ -68,21 +56,23 @@ export async function persistUploadedImage(file: Express.Multer.File): Promise<s
   if (!ext) {
     throw new Error('Unsupported image format.');
   }
+  const filename = `car_${crypto.randomUUID()}${ext}`;
+  return persistImageBuffer(file.buffer, file.mimetype, filename, { purpose: 'car-image' });
+}
 
-  const cloudUrl = await uploadToCloudinary(file.buffer, file.mimetype);
-  if (cloudUrl) {
-    return cloudUrl;
-  }
-
-  await fs.mkdir(CARS_UPLOAD_DIR, { recursive: true });
-  const filename = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
-  const targetPath = path.resolve(CARS_UPLOAD_DIR, filename);
-
-  // Path confinement check
-  if (!targetPath.startsWith(CARS_UPLOAD_DIR + path.sep)) {
-    throw new Error('Invalid upload path.');
-  }
-
-  await fs.writeFile(targetPath, file.buffer);
-  return `/uploads/cars/${filename}`;
+export async function getStoredImage(
+  id: string,
+): Promise<{ stream: NodeJS.ReadableStream; contentType: string } | null> {
+  if (!mongoose.mongo.ObjectId.isValid(id)) return null;
+  const bucket = getImageBucket();
+  const objectId = new mongoose.mongo.ObjectId(id);
+  const [file] = await bucket.find({ _id: objectId }).toArray();
+  if (!file) return null;
+  return {
+    stream: bucket.openDownloadStream(objectId),
+    contentType:
+      typeof file.metadata?.contentType === 'string'
+        ? file.metadata.contentType
+        : 'application/octet-stream',
+  };
 }

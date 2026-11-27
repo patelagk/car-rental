@@ -630,7 +630,7 @@ export function CarFormModal({ open, editingCar, token, onClose, onSaved }: CarF
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Or paste existing image URL (/uploads/cars/... or https://...)"
+                placeholder="Or paste existing image URL (/api/images/... or https://...)"
                 value={imageUrlInput}
                 onChange={(e) => setImageUrlInput(e.target.value)}
                 className="flex-1 h-9 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-orange-500"

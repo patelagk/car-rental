@@ -368,7 +368,7 @@ export function SettingsView({ settings, cars, token, onSaveSettings }: Settings
           <div className="flex items-center gap-3">
             <input
               type="text"
-              placeholder="Logo URL (/uploads/cars/... or https://...)"
+              placeholder="Logo URL (/api/images/... or https://...)"
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
               className="flex-1 h-10 px-3 bg-[#09090B] border border-neutral-800 rounded-lg text-xs text-white focus:outline-none focus:border-orange-500"

@@ -58,7 +58,7 @@ export function AdminApp({ onNavigatePublic }: AdminAppProps) {
   const [allBookings, setAllBookings] = useState<BookingRecord[]>([]);
   const [recentInquiries, setRecentInquiries] = useState<InquiryRecord[]>([]);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [databaseEngine, setDatabaseEngine] = useState('Local Persistent Store');
+  const [databaseEngine, setDatabaseEngine] = useState('MongoDB');
 
   // Modals & Feedback
   const [carModalOpen, setCarModalOpen] = useState(false);

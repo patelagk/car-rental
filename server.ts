@@ -14,7 +14,11 @@ import {
 } from './server/auth.ts';
 import type { AuthenticatedRequest } from './server/auth.ts';
 import { db, initDatabase } from './server/db.ts';
-import { persistUploadedImage, uploadMiddleware, UPLOADS_ROOT } from './server/upload.ts';
+import {
+  getStoredImage,
+  persistUploadedImage,
+  uploadMiddleware,
+} from './server/upload.ts';
 import { datesOverlap, getPublicCarAvailability } from './server/availability.ts';
 import { DEFAULT_SITE_SETTINGS, PICKUP_HUBS } from './src/data/fleet.ts';
 import {
@@ -55,6 +59,18 @@ const VALID_STATUSES: AvailabilityStatus[] = [
   'Under Maintenance',
 ];
 
+function sendDatabaseFailure(
+  res: express.Response,
+  fallbackMessage: string,
+): express.Response {
+  const connected = db.isMongo();
+  return res.status(connected ? 500 : 503).json({
+    error: connected
+      ? fallbackMessage
+      : 'MongoDB is unavailable. Check the MONGODB_URI and Atlas network access.',
+  });
+}
+
 function calculateDays(pickupDate: string, returnDate: string): number {
   const start = new Date(pickupDate);
   const end = new Date(returnDate);
@@ -89,7 +105,6 @@ function slugifyCarId(name: string): string {
 
 async function startServer() {
   const dbInfo = await initDatabase();
-  await fs.mkdir(UPLOADS_ROOT, { recursive: true });
 
   const app = express();
   app.use(express.json({ limit: '2mb' }));
@@ -100,16 +115,40 @@ async function startServer() {
     }
     next();
   });
-  app.use('/uploads', express.static(UPLOADS_ROOT));
-
   // -------------------- PUBLIC API ROUTES --------------------
 
   app.get('/api/health', (_req, res) => {
-    res.json({
-      status: 'ok',
+    const connected = db.isMongo();
+    res.status(connected ? 200 : 503).json({
+      status: connected ? 'ok' : 'error',
       service: '24 Self Drive',
-      database: dbInfo.engine,
+      database: connected ? dbInfo.engine : 'MongoDB unavailable',
     });
+  });
+
+  app.get('/api/images/:id', async (req, res) => {
+    try {
+      const image = await getStoredImage(String(req.params.id));
+      if (!image) {
+        res.status(404).type('text/plain').send('Image not found.');
+        return;
+      }
+      res
+        .set('Content-Type', image.contentType)
+        .set('X-Content-Type-Options', 'nosniff')
+        .set('Cache-Control', 'public, max-age=31536000, immutable');
+      image.stream.on('error', () => {
+        if (!res.headersSent) res.status(500).end();
+        else res.destroy();
+      });
+      image.stream.pipe(res);
+    } catch (error) {
+      console.error(
+        'Unable to read MongoDB image:',
+        error instanceof Error ? error.name : 'UnknownError',
+      );
+      res.status(503).type('text/plain').send('Image storage is temporarily unavailable.');
+    }
   });
 
   app.get('/api/settings', async (_req, res) => {
@@ -117,7 +156,7 @@ async function startServer() {
       const settings = await db.getSettings();
       res.json({ settings });
     } catch {
-      res.status(500).json({ error: 'Unable to load website settings.' });
+      sendDatabaseFailure(res, 'Unable to load website settings.');
     }
   });
 
@@ -154,7 +193,7 @@ async function startServer() {
 
       res.json({ cars, hubs: PICKUP_HUBS, settings });
     } catch {
-      res.status(500).json({ error: 'Unable to load fleet availability.' });
+      sendDatabaseFailure(res, 'Unable to load fleet availability.');
     }
   });
 
@@ -263,7 +302,7 @@ async function startServer() {
       await db.createBooking(booking);
       res.status(201).json({ booking });
     } catch {
-      res.status(500).json({ error: 'Failed to create reservation. Please try again.' });
+      sendDatabaseFailure(res, 'Failed to create reservation. Please try again.');
     }
   });
 
@@ -281,7 +320,7 @@ async function startServer() {
       }
       res.json({ bookings: matches });
     } catch {
-      res.status(500).json({ error: 'Failed to retrieve booking.' });
+      sendDatabaseFailure(res, 'Failed to retrieve booking.');
     }
   });
 
@@ -315,7 +354,7 @@ async function startServer() {
       await db.createInquiry(inquiry);
       res.status(201).json({ inquiry });
     } catch {
-      res.status(500).json({ error: 'Failed to submit inquiry.' });
+      sendDatabaseFailure(res, 'Failed to submit inquiry.');
     }
   });
 
@@ -331,7 +370,7 @@ async function startServer() {
         envConfigured: Boolean(envPassword),
       });
     } catch {
-      res.status(500).json({ error: 'Unable to check admin authentication status.' });
+      sendDatabaseFailure(res, 'Unable to check admin authentication status.');
     }
   });
 
@@ -379,7 +418,7 @@ async function startServer() {
         admin: { email: normalizedEmail, role: 'admin' },
       });
     } catch {
-      res.status(500).json({ error: 'Failed to complete admin setup.' });
+      sendDatabaseFailure(res, 'Failed to complete admin setup.');
     }
   });
 
@@ -417,7 +456,7 @@ async function startServer() {
       const token = issueAdminToken(admin.email);
       res.json({ token, admin: { email: admin.email, role: 'admin' } });
     } catch {
-      res.status(500).json({ error: 'Login failed. Please try again.' });
+      sendDatabaseFailure(res, 'Login failed. Please try again.');
     }
   });
 
@@ -456,10 +495,10 @@ async function startServer() {
         recentBookings: bookings.slice(0, 6),
         allBookings: bookings,
         recentInquiries: inquiries.slice(0, 6),
-        databaseEngine: db.isMongo() ? 'MongoDB' : 'Local Persistent Store',
+        databaseEngine: db.isMongo() ? 'MongoDB' : 'MongoDB unavailable',
       });
     } catch {
-      res.status(500).json({ error: 'Unable to load dashboard analytics.' });
+      sendDatabaseFailure(res, 'Unable to load dashboard analytics.');
     }
   });
 
@@ -484,7 +523,7 @@ async function startServer() {
 
       res.json({ cars: filtered });
     } catch {
-      res.status(500).json({ error: 'Unable to fetch cars.' });
+      sendDatabaseFailure(res, 'Unable to fetch cars.');
     }
   });
 
@@ -499,7 +538,7 @@ async function startServer() {
       const carBookings = allBookings.filter((b) => b.carId === car.id);
       res.json({ car, bookings: carBookings });
     } catch {
-      res.status(500).json({ error: 'Unable to load car details.' });
+      sendDatabaseFailure(res, 'Unable to load car details.');
     }
   });
 
@@ -600,7 +639,7 @@ async function startServer() {
       const created = await db.createCar(newCar);
       res.status(201).json({ car: created });
     } catch {
-      res.status(500).json({ error: 'Failed to create car.' });
+      sendDatabaseFailure(res, 'Failed to create car.');
     }
   });
 
@@ -705,7 +744,7 @@ async function startServer() {
 
       res.json({ car: updated });
     } catch {
-      res.status(500).json({ error: 'Failed to update car details.' });
+      sendDatabaseFailure(res, 'Failed to update car details.');
     }
   });
 
@@ -761,7 +800,7 @@ async function startServer() {
 
       res.json({ car: updated });
     } catch {
-      res.status(500).json({ error: 'Failed to update pricing.' });
+      sendDatabaseFailure(res, 'Failed to update pricing.');
     }
   });
 
@@ -831,7 +870,7 @@ async function startServer() {
       const updated = await db.updateCar(carId, patch);
       res.json({ car: updated });
     } catch {
-      res.status(500).json({ error: 'Failed to update car availability.' });
+      sendDatabaseFailure(res, 'Failed to update car availability.');
     }
   });
 
@@ -849,7 +888,7 @@ async function startServer() {
         message: `${archived.name} has been archived. Booking history has been preserved.`,
       });
     } catch {
-      res.status(500).json({ error: 'Failed to archive car.' });
+      sendDatabaseFailure(res, 'Failed to archive car.');
     }
   });
 
@@ -893,7 +932,7 @@ async function startServer() {
       const [settings, cars] = await Promise.all([db.getSettings(), db.getAllCars(false)]);
       res.json({ settings, cars });
     } catch {
-      res.status(500).json({ error: 'Unable to load settings.' });
+      sendDatabaseFailure(res, 'Unable to load settings.');
     }
   });
 
@@ -1032,7 +1071,7 @@ async function startServer() {
 
       res.json({ settings: updated });
     } catch {
-      res.status(500).json({ error: 'Failed to update website settings.' });
+      sendDatabaseFailure(res, 'Failed to update website settings.');
     }
   });
 
@@ -1075,7 +1114,14 @@ async function startServer() {
     try {
       res.type('text/plain').send(buildRobotsTxt(getPublicOrigin(req)));
     } catch {
-      res.status(500).type('text/plain').send('Unable to generate robots.txt.');
+      res
+        .status(db.isMongo() ? 500 : 503)
+        .type('text/plain')
+        .send(
+          db.isMongo()
+            ? 'Unable to generate robots.txt.'
+            : 'MongoDB is unavailable. Check the MONGODB_URI and Atlas network access.',
+        );
     }
   });
 
@@ -1087,7 +1133,14 @@ async function startServer() {
         .type('application/xml')
         .send(buildSitemapXml(cars, settings, getPublicOrigin(req)));
     } catch {
-      res.status(500).type('text/plain').send('Unable to generate sitemap.xml.');
+      res
+        .status(db.isMongo() ? 500 : 503)
+        .type('text/plain')
+        .send(
+          db.isMongo()
+            ? 'Unable to generate sitemap.xml.'
+            : 'MongoDB is unavailable. Check the MONGODB_URI and Atlas network access.',
+        );
     }
   });
 
@@ -1113,7 +1166,14 @@ async function startServer() {
       res.type('html').send(rendered.html);
     } catch (err) {
       console.error('Unable to render SEO page:', err);
-      res.status(500).type('text/plain').send('Unable to render this page.');
+      res
+        .status(db.isMongo() ? 500 : 503)
+        .type('text/plain')
+        .send(
+          db.isMongo()
+            ? 'Unable to render this page.'
+            : 'MongoDB is unavailable. Check the MONGODB_URI and Atlas network access.',
+        );
     }
   }
 
@@ -1161,4 +1221,9 @@ async function startServer() {
   });
 }
 
-startServer();
+startServer().catch((error: unknown) => {
+  const message =
+    error instanceof Error ? error.message : 'Unknown server startup error.';
+  console.error(`Server startup failed: ${message}`);
+  process.exitCode = 1;
+});
