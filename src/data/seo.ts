@@ -92,7 +92,7 @@ export const SEO_PAGES: SeoPageData[] = [
       {
         heading: 'Compare before booking',
         paragraphs: [
-          'Check each car’s category, seating, transmission, fuel type, daily rate and included kilometres. The live availability check can change with dates and confirmed reservations.',
+          'Check each car’s category, seating, transmission, fuel type, daily rate and included kilometres. Fleet status is managed by 24 Self Drive; booking requests are checked against the selected dates.',
         ],
       },
     ],

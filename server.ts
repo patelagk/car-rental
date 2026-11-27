@@ -15,6 +15,7 @@ import {
 import type { AuthenticatedRequest } from './server/auth.ts';
 import { db, initDatabase } from './server/db.ts';
 import { persistUploadedImage, uploadMiddleware, UPLOADS_ROOT } from './server/upload.ts';
+import { datesOverlap, getPublicCarAvailability } from './server/availability.ts';
 import { DEFAULT_SITE_SETTINGS, PICKUP_HUBS } from './src/data/fleet.ts';
 import {
   getCarSlug,
@@ -63,10 +64,6 @@ function calculateDays(pickupDate: string, returnDate: string): number {
   const diffMs = end.getTime() - start.getTime();
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   return Math.max(1, days);
-}
-
-function datesOverlap(startA: string, endA: string, startB: string, endB: string): boolean {
-  return startA < endB && startB < endA;
 }
 
 function isSafeImageUrl(url: string): boolean {
@@ -132,9 +129,8 @@ async function startServer() {
       const pickupDate = typeof req.query.pickupDate === 'string' ? req.query.pickupDate : '';
       const returnDate = typeof req.query.returnDate === 'string' ? req.query.returnDate : '';
 
-      const [allCars, allBookings, settings] = await Promise.all([
+      const [allCars, settings] = await Promise.all([
         db.getAllCars(false),
-        db.getAllBookings(),
         db.getSettings(),
       ]);
 
@@ -148,41 +144,11 @@ async function startServer() {
           return matchCategory && matchTransmission;
         })
         .map((car) => {
-          let available = car.status === 'Available';
-          let availabilityReason: string | undefined =
-            car.status !== 'Available' ? car.status : undefined;
-          let conflictDates: string | undefined;
-
-          if (available && pickupDate && returnDate) {
-            const conflictingBooking = allBookings.find(
-              (b) =>
-                b.carId === car.id &&
-                b.status === 'Confirmed' &&
-                datesOverlap(pickupDate, returnDate, b.pickupDate, b.returnDate),
-            );
-            if (conflictingBooking) {
-              available = false;
-              availabilityReason = 'Booked for selected dates';
-              conflictDates = `${conflictingBooking.pickupDate} to ${conflictingBooking.returnDate}`;
-            } else {
-              const blocked = (car.blockedDates || []).find((blk) =>
-                datesOverlap(pickupDate, returnDate, blk.startDate, blk.endDate),
-              );
-              if (blocked) {
-                available = false;
-                availabilityReason = blocked.reason || 'Unavailable for selected dates';
-                conflictDates = `${blocked.startDate} to ${blocked.endDate}`;
-              }
-            }
-          }
-
           return {
             ...car,
-            available,
-            availabilityReason,
+            ...getPublicCarAvailability(car, pickupDate, returnDate),
             days,
             estimatedRentalInr: car.dailyRateInr * days,
-            conflictDates,
           };
         });
 

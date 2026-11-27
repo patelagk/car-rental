@@ -250,7 +250,7 @@ export function FleetSection({
                       {car.available ? (
                         <span className="inline-flex items-center gap-1.5 font-medium text-neutral-800">
                           <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" />
-                          <span>Available for selected dates</span>
+                          <span>Available</span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 font-medium text-neutral-600">
