@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CarBookingModal } from './components/CarBookingModal.tsx';
 import { FleetSection } from './components/FleetSection.tsx';
 import { Footer } from './components/Footer.tsx';
@@ -28,6 +28,7 @@ import { getDefaultDates } from './utils/whatsapp.ts';
 
 export default function App() {
   const [pathname, setPathname] = useState(() => window.location.pathname);
+  const previousPathname = useRef(pathname);
 
   useEffect(() => {
     const onPopState = () => setPathname(window.location.pathname);
@@ -110,6 +111,27 @@ export default function App() {
     }
     canonicalTag.href = canonical;
   }, [isAdminRoute, seoPage, settings]);
+
+  useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    const previous = previousPathname.current;
+    previousPathname.current = pathname;
+    if (pathname.startsWith('/admin')) return;
+
+    const trackingWindow = window as Window & {
+      dataLayer?: Array<Record<string, unknown>>;
+    };
+    const dataLayer =
+      trackingWindow.dataLayer ?? (trackingWindow.dataLayer = []);
+    const pagePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    dataLayer.push({
+      event: 'page_view',
+      page_location: window.location.href,
+      page_path: pagePath,
+      page_referrer: new URL(previous, window.location.origin).href,
+      page_title: document.title,
+    });
+  }, [pathname]);
 
   const fetchFleet = useCallback(async () => {
     setLoading(true);
